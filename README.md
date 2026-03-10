@@ -94,9 +94,12 @@ Kopioi tulos ja käytä sitä `FLASK_SECRET_KEY`-arvona.
 
 ### 5. Käynnistä botti
 
+Botti toimii Windowsilla, Linuxilla ja macOS:lla.
+
 **Windows:**
 ```bash
 python run.py
+# tai kaksoisklikkaa start.bat
 ```
 
 **Linux / macOS:**
@@ -260,7 +263,8 @@ Botin Discord-statuksessa (»Watching«) näkyy palvelimien määrä, kuvaus ja 
 DiscordBotti/
 ├── LICENSE
 ├── run.py              # Käynnistys (botti + web)
-├── start.sh            # Käynnistys Linuxilla (python3)
+├── start.sh            # Käynnistys Linux/macOS
+├── start.bat           # Käynnistys Windows
 ├── bot.py              # Discord-botin logiikka
 ├── web_app.py          # Flask web-sovellus
 ├── database.py         # Tietokanta (SQLite)
@@ -305,9 +309,11 @@ DiscordBotti/
 - Harkitse HTTPS:ää ja reverse-proxyä (esim. Nginx)
 - Voit käyttää Gunicornia web-sovellukselle erillisessä prosessissa
 
-### Linux-palvelimella
+### Cross-platform (Windows, Linux, macOS)
 
-Sovellus toimii Windowsin, Linuxin ja macOS:n yli (Python, `os.path`, `pathlib`). Linuxilla:
+Sovellus toimii kaikilla yllä mainituilla alustoilla. Käytössä `os.path` ja `pathlib` – polut toimivat oikein riippumatta käyttöjärjestelmästä.
+
+**Linux-palvelimella:**
 
 ```bash
 # Asenna riippuvuudet
@@ -320,10 +326,12 @@ pip install -r requirements.txt
 
 # Käynnistä
 python3 run.py
-# tai: ./start.sh
+# tai: chmod +x start.sh && ./start.sh
 ```
 
-`start.sh` käyttää `python3`-komentoa ja siirtyy automaattisesti projektikansioon.
+**Windowsilla:** käytä `python run.py` tai kaksoisklikkaa `start.bat`.
+
+**Kopiointi Linux-koneelle:** vie koko projektikansio (esim. `scp -r` tai git clone). `.env` tulee luoda uudelleen tai kopioida erikseen.
 
 ## Tuki ja yhteisö
 
