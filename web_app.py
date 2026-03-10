@@ -211,6 +211,8 @@ def guild_settings(guild_id):
         "enabled": settings.get(f"log_{k}", True)
     } for k, l, d in LOG_FEATURES]
     log_channel = settings.get("log_channel_id") or settings.get("mod_log_channel_id")
+    welcome_enabled = settings.get("welcome_enabled", False)
+    welcome_channel = settings.get("welcome_channel_id")
     return render_template(
         "guild_settings.html",
         guild=guild,
@@ -225,6 +227,8 @@ def guild_settings(guild_id):
         ticket_staff_role=ticket_staff_role,
         ticket_category=ticket_category,
         ticket_channel=ticket_channel,
+        welcome_enabled=welcome_enabled,
+        welcome_channel=welcome_channel,
         user=session["user"]
     )
 
@@ -294,6 +298,22 @@ def api_toggle_log_feature(guild_id, log_key):
     data = request.get_json() or {}
     enabled = bool(data.get("enabled", True))
     database.set_log_enabled(guild_id, log_key, enabled)
+    return jsonify({"success": True})
+
+
+@app.route("/api/guild/<guild_id>/welcome/settings", methods=["POST"])
+@login_required
+def api_set_welcome_settings(guild_id):
+    guilds = get_user_guilds()
+    if not any(g["id"] == guild_id for g in guilds):
+        return jsonify({"error": "Ei oikeuksia"}), 403
+    data = request.get_json() or {}
+    enabled = bool(data["enabled"]) if "enabled" in data else None
+    channel_id = None
+    if "channel_id" in data:
+        ch = data["channel_id"]
+        channel_id = str(ch) if ch else ""  # "" = tyhjennä kanava
+    database.set_welcome_settings(guild_id, enabled=enabled, channel_id=channel_id)
     return jsonify({"success": True})
 
 

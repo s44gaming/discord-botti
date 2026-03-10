@@ -100,6 +100,30 @@
                 {% endif %}
             </div>
 
+            <h2 class="subsection-title">Tervetuloa-viesti</h2>
+            <p class="muted subsection-desc">Lähetä tervetuloa-viesti kun uusi jäsen liittyy palvelimelle. Valitse kanava ja kytke päälle/pois.</p>
+            <div class="panel">
+                <h3 class="panel-title">Tervetuloa-asetukset</h3>
+                <div class="ticket-settings">
+                    <div class="ticket-row" style="display: flex; align-items: center; gap: 1rem;">
+                        <label class="toggle">
+                            <input type="checkbox" id="welcome-enabled" {% if welcome_enabled %}checked{% endif %}>
+                            <span class="toggle-track"></span>
+                        </label>
+                        <label for="welcome-enabled" style="margin: 0;">Päällä</label>
+                    </div>
+                    <div class="ticket-row">
+                        <label>Kanava johon viesti lähetetään</label>
+                        <select id="welcome-channel" class="channel-select">
+                            <option value="">– Ei kanavaa –</option>
+                            {% for ch in channels %}
+                            <option value="{{ ch.id }}" {% if welcome_channel == (ch.id|string) %}selected{% endif %}>{{ ch.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <h2 class="subsection-title">Tikettijärjestelmä</h2>
             <p class="muted subsection-desc">Valitse rooli joka näkee tiketit, kategoria sekä kanava josta tiketit avataan.</p>
             <div class="panel">
@@ -238,6 +262,19 @@
             }).then(r => { if (!r.ok) alert('Tiketti-asetusten tallennus epäonnistui'); });
         }
         document.getElementById('ticket-staff-role')?.addEventListener('change', saveTicketSettings);
+
+        // Tervetuloa-asetukset
+        function saveWelcomeSettings() {
+            const enabled = document.getElementById('welcome-enabled')?.checked ?? false;
+            const channelId = document.getElementById('welcome-channel')?.value || '';
+            fetch(`/api/guild/${guildId}/welcome/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled, channel_id: channelId || null })
+            }).then(r => { if (!r.ok) alert('Tervetuloa-asetusten tallennus epäonnistui'); });
+        }
+        document.getElementById('welcome-enabled')?.addEventListener('change', saveWelcomeSettings);
+        document.getElementById('welcome-channel')?.addEventListener('change', saveWelcomeSettings);
         document.getElementById('ticket-category')?.addEventListener('change', saveTicketSettings);
         document.getElementById('ticket-channel')?.addEventListener('change', saveTicketSettings);
 

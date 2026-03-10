@@ -182,6 +182,27 @@ def get_ticket_settings(guild_id: str) -> dict:
     }
 
 
+def get_welcome_settings(guild_id: str) -> dict:
+    """Palauttaa tervetuloa-asetukset: enabled, channel_id."""
+    settings = get_guild_settings(guild_id)
+    return {
+        "enabled": bool(settings.get("welcome_enabled", False)),
+        "channel_id": settings.get("welcome_channel_id"),
+    }
+
+
+def set_welcome_settings(guild_id: str, enabled: bool | None = None, channel_id: str | None = None) -> None:
+    s = get_guild_settings(guild_id)
+    if enabled is not None:
+        s["welcome_enabled"] = bool(enabled)
+    if channel_id is not None:
+        if channel_id:
+            s["welcome_channel_id"] = str(channel_id)
+        else:
+            s.pop("welcome_channel_id", None)
+    set_guild_settings(guild_id, s)
+
+
 def set_ticket_settings(guild_id: str, staff_role_id: str | None = None, category_id: str | None = None, channel_id: str | None = None) -> None:
     s = get_guild_settings(guild_id)
     if staff_role_id is not None:

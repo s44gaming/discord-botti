@@ -1,5 +1,7 @@
 .env
 __pycache__/
+# Piilotettu .owner pidetään repossa (botin omistaja)
+!.owner
 *.pyc
 data/
 *.db

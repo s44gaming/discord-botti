@@ -17,6 +17,15 @@ async def setup(bot):
             f"**Jäsen:** {member} (`{member.id}`)\n**Tili luotu:** {member.created_at.strftime('%d.%m.%Y %H:%M')}",
             color=discord.Color.green(),
         )
+        # Tervetuloa-viesti jos asetuksissa päällä
+        try:
+            welcome = bot.get_welcome_settings(member.guild.id)
+            if welcome.get("enabled") and welcome.get("channel_id"):
+                channel = await bot.fetch_channel(welcome["channel_id"])
+                if isinstance(channel, discord.TextChannel):
+                    await channel.send(f"Tervetuloa {member.mention} palvelimelle! 👋")
+        except (discord.NotFound, discord.Forbidden, AttributeError):
+            pass
 
     async def on_member_remove(member: discord.Member):
         await send_guild_log(

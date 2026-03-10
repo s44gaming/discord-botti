@@ -64,6 +64,9 @@ class Bot(commands.Bot):
     def get_ticket_settings(self, guild_id: int) -> dict:
         return self._db.get_ticket_settings(str(guild_id))
 
+    def get_welcome_settings(self, guild_id: int) -> dict:
+        return self._db.get_welcome_settings(str(guild_id))
+
     async def setup_hook(self):
         print("Ladataan extentioita...")
         await _load_extensions(self, "commands")
