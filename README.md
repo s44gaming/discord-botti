@@ -1,16 +1,21 @@
-# Discord Bot - Monipalvelin-hallinta
+# Xevrion – Discord Bot
 
-Python-pohjainen Discord-botti, joka tukee useaa palvelinta ja web-käyttöliittymää palvelinkohtaisten asetusten hallintaan. Vain ylläpitäjät voivat hallita asetuksia.
+Python-pohjainen Discord-botti (Xevrion), joka tukee useaa palvelinta ja web-käyttöliittymää palvelinkohtaisten asetusten hallintaan. Vain ylläpitäjät voivat hallita asetuksia.
 
 ## Ominaisuudet
 
 - **Monipalvelin** – sama botti usealla serverillä, kaikki asetukset palvelinkohtaisia
 - **Web-dashboard** – hallitse kaikkia ominaisuuksia palvelin kerrallaan
 - **Ylläpitäjä-tarkistus** – vain palvelimen Administratorit näkevät hallinnan
-- **Peruskomentoja** – ping, info, tervehdys, hallinta
+- **Peruskomentoja** – ping, info, tervehdys, hallinta, komennot-lista
+- **Kutsulinkit** – /kutsu (Apply bot), /lähetäkutsu (yhteisön kutsu kanavalle)
 - **Moderaatio** – kick, ban, mute, varoitukset, clear – roolit ja toiminnat hallitaan webistä
 - **Serverilogit** – mod-toiminnot, jäsenet liittyy/poistuu, viestien poisto/muokkaus – kanava ja tyypit webistä
 - **Tikettijärjestelmä** – staff-rooli, kategoria ja kanava määritellään webistä
+- **Levellijärjestelmä** – taso ja XP, tasonboard – asetukset webistä
+- **Minipelit** – kolikko, noppa, 8-pallo, kivi-paperi-sakset, arpa, ruletti – kytkettävissä webistä
+- **FiveM-palvelimen tila** – /fivem näyttää pelaajamäärän jne., asetukset (host, port, status-kanava) webistä
+- **Kehittäjäportaali** – DEV_USER_IDS -käyttäjille: bottin tilat, konsoliloki, käynnistä/sammuta, palvelimen poisto
 
 ## Vaatimukset
 
@@ -20,8 +25,9 @@ Python-pohjainen Discord-botti, joka tukee useaa palvelinta ja web-käyttöliitt
   - flask >= 3.0.0
   - requests >= 2.31.0
   - python-dotenv >= 1.0.0
+  - cryptography >= 42.0.0 (botin tietojen salattu tallennus)
 
-Vapaaehtoinen: `discord.py[speed]` nopeampaan JSON-käsittelyyn ja parempaan suorituskykyyn.
+Vapaaehtoiset: `discord.py[speed]` nopeampaan JSON-käsittelyyn, `psutil` muistin käytön näyttämiseen kehittäjäportaalissa.
 
 ## Nopea käynnistys
 
@@ -61,6 +67,16 @@ DISCORD_REDIRECT_URI=http://localhost:5000/callback
 
 # Tärkeää: Luo satunnainen avain!
 FLASK_SECRET_KEY=generate_a_random_secret_key
+
+# Kehittäjäportaali: Discord-käyttäjä-ID:t (pilkulla erotettuna)
+DEV_USER_IDS=123456789012345678
+
+# Botin tiedot (voi myös data/bot_info.txt tai salattu data/bot_info.enc)
+BOT_DESCRIPTION=Monipalvelin-botti, hallinta: !hallinta
+BOT_DEVELOPERS=S44Gaming
+BOT_INVITE_LINK=https://discord.gg/...
+BOT_APPLY_URL=
+BOT_INFO_EDIT_PASSWORD=  # Muokkaussalasana kehittäjäportaalin Botin tiedot -osiolle
 ```
 
 **FLASK_SECRET_KEY**: Luo turvallinen satunnainen avain esim. komennolla:
@@ -94,10 +110,23 @@ Tämä käynnistää:
 
 | Osa | Asetukset |
 |-----|-----------|
-| **Perusominaisuudet** | Ping, Info, Tervehdys, Hallinta-linkki, Tikettijärjestelmä – päälle/pois |
-| **Moderaatio** | Moderaattoriroolit (ketkä voivat käyttää mod-komentoja), yksittäisten mod-toimintojen päälle/pois |
+| **Komennot** | Ping, Komennot, Info, Tervehdys, Hallinta, Kutsu, Kutsuviesti, Tiketti, Taso, Tasonboard – päälle/pois |
+| **Minipelit** | Kolikko, Noppa, 8-pallo, Kivi-paperi-sakset, Arvaa luku, Arpa, Ruletti – päälle/pois |
+| **FiveM** | Palvelimen osoite, portti (oletus 30120), kanava johon status voidaan lähettää |
+| **Moderaatio** | Moderaattoriroolit, yksittäisten mod-toimintojen päälle/pois |
 | **Logit** | Logikanava, lokityypit (mod-toiminnot, jäsen liittyy/poistuu, viestin poisto/muokkaus) |
-| **Tiketit** | Staff-rooli (ketkä näkevät tiketit), kategoria tiketille, kanava josta tiketti avataan |
+| **Tervetuloa** | Päälle/pois, tervetulokanava |
+| **Levellijärjestelmä** | Päälle/pois, XP-asetukset, tasoroolit, äänekäs XP |
+| **Tiketit** | Staff-rooli, kategoria tiketille, kanava josta tiketti avataan |
+
+### Kehittäjäportaali (vain DEV_USER_IDS)
+
+Jos Discord-käyttäjä-IDsi on `.env`:ssä `DEV_USER_IDS`-listalla, näet linkin **Kehittäjäportaali**. Siellä voit:
+- nähdä bottin tilat (latenssi, palvelimet, muisti, ajoaika)
+- tarkastella konsolilokia
+- käynnistää/sammuttaa botin tai koko sovelluksen
+- poistaa bottin palvelimelta
+- muokata botin tietoja (kuvaus, kehittäjät, Apply bot -linkki, yhteisön kutsu) – vaatii muokkaussalasanan
 
 ---
 
@@ -108,9 +137,12 @@ Tämä käynnistää:
 | Komento | Kuvaus |
 |---------|--------|
 | `/ping` | Botin vastausaika |
+| `/komennot` | Näytä kaikki komennot (päivittyy automaattisesti) |
 | `/info` | Palvelimen tiedot |
 | `/tervehdys` | Tervehdys |
 | `/hallinta` | Linkki web-dashboardiin |
+| `/kutsu` | Linkki lisätä botti omaan palvelimeen (Apply bot) |
+| `/lähetäkutsu` | Lähettää yhteisön kutsulinkin kanavalle (vaatii Manage Server) |
 
 ### Moderaatiokomennot
 
@@ -126,6 +158,31 @@ Tämä käynnistää:
 | `/clear` | Poista viestejä kanavalta |
 
 *Mod-roolit määritellään webissä. Ylläpitäjillä on aina mod-oikeudet.*
+
+### Minipelit
+
+| Komento | Kuvaus |
+|---------|--------|
+| `/kolikko` | Heitä kolikkoa (kruuna/klaava) |
+| `/noppa` | Heitä noppaa (esim. 1d6, 2d20) |
+| `/8ball` | Maaginen 8-pallo vastaa kysymykseesi |
+| `/kps` | Kivi, paperi, sakset – pelaa bottia vastaan |
+| `/arvaa_luku` | Arvaa luku 1–10 |
+| `/arpa` | Arpa valitsee vaihtoehdoista (pilkulla erotettu lista) |
+| `/ruletti` | Venäläinen ruletti (1/6) |
+
+### Taso- ja levellijärjestelmä
+
+| Komento | Kuvaus |
+|---------|--------|
+| `/taso` | Näytä taso ja XP |
+| `/tasonboard` | TasoTOP-10 |
+
+### FiveM
+
+| Komento | Kuvaus |
+|---------|--------|
+| `/fivem` | FiveM-palvelimen tila (pelaajat, kartta). Aseta palvelin webistä. Valinnalla »Lähetä kanavalle« lähettää statusin asetettuun kanavaan. |
 
 ### Tikettijärjestelmä
 
@@ -148,6 +205,12 @@ Tämä käynnistää:
 
 Kaikki ominaisuudet voidaan ottaa pois käytöstä web-dashboardista palvelin kerrallaan.
 
+### Botin status ja tiedot
+
+Botin Discord-statuksessa (»Watching«) näkyy palvelimien määrä, kuvaus ja kehittäjät. Nämä voi muokata:
+- **data/bot_info.txt** tai salattu **data/bot_info.enc**
+- tai kehittäjäportaalin Botin tiedot -osiossa (vaatii BOT_INFO_EDIT_PASSWORD .env:ssä)
+
 ## Projektin rakenne
 
 ```
@@ -158,23 +221,35 @@ DiscordBotti/
 ├── web_app.py          # Flask web-sovellus
 ├── database.py         # Tietokanta (SQLite)
 ├── config.py           # Konfiguraatio
-├── logs.py             # Logien lähetys kanavalle
+├── bot_info.py         # Botin tiedot (kuvaus, kehittäjät, linkit) – salasanasuojattu
+├── fivem_status.py     # FiveM-palvelimen tilan haku
+├── shared_state.py     # Jaettu tila (dev-portaalia varten)
+├── logs.py
 ├── requirements.txt
 ├── .env.example
-├── commands/           # Slash-komennot
+├── commands/
 │   ├── ping.py
+│   ├── komennot_lista.py  # /komennot – kaikki komennot
 │   ├── info.py
 │   ├── tervehdys.py
 │   ├── hallinta.py
-│   ├── moderaatio.py   # kick, ban, mute, varoitukset, clear
-│   └── tiketti.py      # Tikettijärjestelmä
+│   ├── kutsu.py         # /kutsu, /lähetäkutsu
+│   ├── moderaatio.py
+│   ├── taso.py
+│   ├── tiketti.py
+│   ├── minipelit.py     # kolikko, noppa, 8ball, kps, arpa, ruletti
+│   └── fivem.py         # /fivem
 ├── events/
 │   ├── on_ready.py
-│   └── server_logs.py  # join/leave, viestin poisto/muokkaus
+│   ├── server_logs.py
+│   └── levels.py
 ├── web/
-│   ├── templates/      # HTML-sivut
-│   └── static/         # CSS, JS
-└── data/               # Luodaan automaattisesti (tietokanta)
+│   ├── templates/
+│   └── static/
+└── data/
+    ├── bot.db
+    ├── bot_info.txt     # Botin tiedot (voi olla salattu bot_info.enc)
+    └── ...
 ```
 
 ## Tuotantokäyttö
