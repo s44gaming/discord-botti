@@ -83,3 +83,5 @@ class TasoCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(TasoCog(bot))
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

@@ -170,3 +170,5 @@ async def setup(bot):
     bot.add_view(TicketOpenView(bot))
     bot.add_view(TicketCloseView(bot))
     await bot.add_cog(TikettiCog(bot))
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

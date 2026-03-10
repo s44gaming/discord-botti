@@ -378,3 +378,5 @@ def clear_warns(guild_id: str, user_id: str) -> int:
     with _get_conn() as conn:
         c = conn.execute("DELETE FROM warns WHERE guild_id = ? AND user_id = ?", (str(guild_id), str(user_id)))
         return int(c.rowcount or 0)
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

@@ -22,3 +22,5 @@ class PingCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(PingCog(bot))
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

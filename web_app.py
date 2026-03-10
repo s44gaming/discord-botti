@@ -715,3 +715,5 @@ def api_set_ticket_settings(guild_id):
 
 def create_app():
     return app
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

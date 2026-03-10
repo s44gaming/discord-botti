@@ -118,3 +118,5 @@ async def setup(bot):
 
     bot.add_listener(on_message, "on_message")
     bot.add_listener(on_voice_state_update, "on_voice_state_update")
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

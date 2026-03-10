@@ -64,3 +64,5 @@ def get_console_lines(limit: int = 200) -> list[str]:
 def clear_console() -> None:
     with _lock:
         _console_lines.clear()
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

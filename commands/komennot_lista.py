@@ -53,3 +53,5 @@ class KomennotListaCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(KomennotListaCog(bot))
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

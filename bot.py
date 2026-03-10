@@ -105,3 +105,5 @@ class Bot(commands.Bot):
 
 def create_bot():
     return Bot()
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

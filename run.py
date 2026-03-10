@@ -54,3 +54,5 @@ if __name__ == "__main__":
         print("Virhe: Aseta DISCORD_TOKEN .env-tiedostoon.")
         sys.exit(1)
     main()
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

@@ -89,3 +89,5 @@ def fetch_fivem_status(host: str, port: str = "30120") -> dict | None:
             continue
 
     return {"online": False, "error": "Palvelinta ei saatu yhteyttä tai vastaus ei ole tunnistettu."}
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

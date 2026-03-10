@@ -81,3 +81,5 @@ async def setup(bot):
     bot.add_listener(on_message_delete, "on_message_delete")
     bot.add_listener(on_message_edit, "on_message_edit")
 
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg
+

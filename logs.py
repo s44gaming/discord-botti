@@ -50,3 +50,5 @@ async def send_guild_log(
     except discord.Forbidden:
         return
 
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg
+

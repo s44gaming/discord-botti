@@ -95,3 +95,5 @@ def save(data: dict, edit_password: str) -> bool:
 
 def encrypted_file_exists() -> bool:
     return _ENC_FILE.exists()
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

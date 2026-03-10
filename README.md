@@ -266,3 +266,7 @@ Jos tarvitset apua botin kanssa, liity [S44Gaming Squad](https://discord.gg/ujB4
 ## Lisenssi
 
 Katso [LICENSE](LICENSE). Tekijän oikeudet: S44Gaming. Ei-kaupallinen käyttö sallittu; kaupallinen käyttö vain S44Gaming:n suostumuksella.
+
+---
+
+*Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg*

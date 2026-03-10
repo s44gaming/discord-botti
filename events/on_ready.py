@@ -13,3 +13,5 @@ async def setup(bot):
     bot.add_listener(on_ready_handler, "on_ready")
     bot.add_listener(on_guild_join_handler, "on_guild_join")
     bot.add_listener(on_guild_remove_handler, "on_guild_remove")
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

@@ -42,3 +42,5 @@ BOT_APPLY_URL = _bot_apply
 
 # Salasana botin tietojen muokkaukseen kehittäjäportaalissa (pakollinen salatun tiedoston käytölle)
 BOT_INFO_EDIT_PASSWORD = (os.getenv("BOT_INFO_EDIT_PASSWORD") or "").strip()
+
+# Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg
