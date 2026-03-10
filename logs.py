@@ -1,5 +1,5 @@
 import discord
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 async def send_guild_log(
@@ -43,7 +43,7 @@ async def send_guild_log(
         title=title,
         description=description,
         color=color or discord.Color.orange(),
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
     try:
         await channel.send(embed=embed)

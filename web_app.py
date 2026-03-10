@@ -5,6 +5,9 @@ from flask import Flask, redirect, url_for, session, request, jsonify, render_te
 from functools import wraps
 import database
 
+_REQ_TIMEOUT = 10
+_REQ_HEADERS = {"User-Agent": "DiscordBot (Web Dashboard)"}
+
 app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 app.config["PERMANENT_SESSION_LIFETIME"] = 86400
@@ -57,7 +60,8 @@ def get_user_guilds():
         return []
     r = requests.get(
         f"{DISCORD_API}/users/@me/guilds",
-        headers={"Authorization": f"Bearer {token}"}
+        headers={"Authorization": f"Bearer {token}", **_REQ_HEADERS},
+        timeout=_REQ_TIMEOUT
     )
     if r.status_code != 200:
         return []
@@ -72,7 +76,8 @@ def get_guild_channels(guild_id: str) -> list:
         return []
     r = requests.get(
         f"{DISCORD_API}/guilds/{guild_id}/channels",
-        headers={"Authorization": f"Bot {BOT_TOKEN}"}
+        headers={"Authorization": f"Bot {BOT_TOKEN}", **_REQ_HEADERS},
+        timeout=_REQ_TIMEOUT
     )
     if r.status_code != 200:
         return []
@@ -86,7 +91,8 @@ def get_guild_categories(guild_id: str) -> list:
         return []
     r = requests.get(
         f"{DISCORD_API}/guilds/{guild_id}/channels",
-        headers={"Authorization": f"Bot {BOT_TOKEN}"}
+        headers={"Authorization": f"Bot {BOT_TOKEN}", **_REQ_HEADERS},
+        timeout=_REQ_TIMEOUT
     )
     if r.status_code != 200:
         return []
@@ -99,7 +105,8 @@ def get_guild_roles(guild_id: str) -> list:
         return []
     r = requests.get(
         f"{DISCORD_API}/guilds/{guild_id}",
-        headers={"Authorization": f"Bot {BOT_TOKEN}"},
+        headers={"Authorization": f"Bot {BOT_TOKEN}", **_REQ_HEADERS},
+        timeout=_REQ_TIMEOUT
     )
     if r.status_code != 200:
         return []
@@ -145,7 +152,7 @@ def callback():
         "code": code,
         "redirect_uri": REDIRECT_URI,
     }
-    r = requests.post(f"{DISCORD_API}/oauth2/token", data=data)
+    r = requests.post(f"{DISCORD_API}/oauth2/token", data=data, timeout=_REQ_TIMEOUT)
     if r.status_code != 200:
         return f"Virhe kirjautumisessa: {r.text}", 400
     token_data = r.json()
@@ -154,7 +161,8 @@ def callback():
     session.permanent = True
     r = requests.get(
         f"{DISCORD_API}/users/@me",
-        headers={"Authorization": f"Bearer {token_data['access_token']}"}
+        headers={"Authorization": f"Bearer {token_data['access_token']}", **_REQ_HEADERS},
+        timeout=_REQ_TIMEOUT
     )
     if r.status_code != 200:
         return "Virhe käyttäjätietojen haussa", 400

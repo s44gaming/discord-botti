@@ -12,6 +12,17 @@ Python-pohjainen Discord-botti, joka tukee useaa palvelinta ja web-käyttöliitt
 - **Serverilogit** – mod-toiminnot, jäsenet liittyy/poistuu, viestien poisto/muokkaus – kanava ja tyypit webistä
 - **Tikettijärjestelmä** – staff-rooli, kategoria ja kanava määritellään webistä
 
+## Vaatimukset
+
+- **Python 3.8+** (suositellaan 3.10 tai uudempi)
+- **Paketit**:
+  - discord.py >= 2.7.1
+  - flask >= 3.0.0
+  - requests >= 2.31.0
+  - python-dotenv >= 1.0.0
+
+Vapaaehtoinen: `discord.py[speed]` nopeampaan JSON-käsittelyyn ja parempaan suorituskykyyn.
+
 ## Nopea käynnistys
 
 ### 1. Asenna riippuvuudet

@@ -1,4 +1,6 @@
-discord.py>=2.3.2
+# Python 3.10+ suositeltu (3.8+ tuettu)
+discord.py>=2.7.1
 flask>=3.0.0
 requests>=2.31.0
 python-dotenv>=1.0.0
+# Vapaaehtoinen: discord.py[speed] nopeampaan JSON-käsittelyyn

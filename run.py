@@ -27,7 +27,7 @@ from web_app import app
 
 def run_web():
     database.init_db()
-    app.run(host="0.0.0.0", port=WEB_PORT, debug=False, use_reloader=False)
+    app.run(host="0.0.0.0", port=WEB_PORT, debug=False, use_reloader=False, threaded=True)
 
 
 def run_bot():

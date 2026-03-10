@@ -5,7 +5,7 @@ Moderaattoriroolit + toimintojen kytkimet + logikanava hallitaan web-dashboardis
 import discord
 from discord import app_commands
 from discord.ext import commands
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import database
 from logs import send_guild_log
@@ -89,7 +89,7 @@ class ModeraatioCog(commands.Cog):
         if not await self._check_mod(interaction, "mute"):
             return
         duration = max(1, min(40320, minuutit))
-        until = datetime.utcnow() + timedelta(minutes=duration)
+        until = datetime.now(timezone.utc) + timedelta(minutes=duration)
         try:
             await jäsen.timeout(until, reason=syy or f"Moderaattori: {interaction.user}")
             await interaction.response.send_message(embed=_ok(f"Mykistetty {jäsen} {duration} minuutiksi."))

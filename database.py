@@ -1,8 +1,29 @@
 import sqlite3
 import json
 import os
+from contextlib import contextmanager
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "data", "bot.db")
+_TIMEOUT = 5.0  # sekunteja, estää lukitukset
+
+
+@contextmanager
+def _get_conn():
+    """Yhteyden konteksti: varmistaa sulkemisen ja tukee Flask-säikeitä."""
+    conn = sqlite3.connect(DB_PATH, timeout=_TIMEOUT)
+    conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
+        conn.execute("PRAGMA cache_size=-64000")
+        conn.execute("PRAGMA temp_store=MEMORY")
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 DEFAULT_MOD_FEATURES = {
     "kick": True,
@@ -24,60 +45,54 @@ DEFAULT_LOG_FEATURES = {
 
 def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS guild_settings (
-            guild_id TEXT PRIMARY KEY,
-            features TEXT DEFAULT '{}',
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id TEXT PRIMARY KEY,
-            username TEXT,
-            discriminator TEXT,
-            avatar TEXT,
-            access_token TEXT,
-            refresh_token TEXT,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS warns (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            guild_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            mod_id TEXT NOT NULL,
-            reason TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    conn.close()
+    with _get_conn() as conn:
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS guild_settings (
+                guild_id TEXT PRIMARY KEY,
+                features TEXT DEFAULT '{}',
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                username TEXT,
+                discriminator TEXT,
+                avatar TEXT,
+                access_token TEXT,
+                refresh_token TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS warns (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                guild_id TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                mod_id TEXT NOT NULL,
+                reason TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
 
 def get_guild_settings(guild_id: str) -> dict:
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT features FROM guild_settings WHERE guild_id = ?", (str(guild_id),))
-    row = c.fetchone()
-    conn.close()
+    with _get_conn() as conn:
+        c = conn.cursor()
+        c.execute("SELECT features FROM guild_settings WHERE guild_id = ?", (str(guild_id),))
+        row = c.fetchone()
     if row:
         return json.loads(row[0])
     return {}
 
 
 def set_guild_settings(guild_id: str, features: dict) -> None:
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute(
-        "INSERT OR REPLACE INTO guild_settings (guild_id, features, updated_at) VALUES (?, ?, datetime('now'))",
-        (str(guild_id), json.dumps(features))
-    )
-    conn.commit()
-    conn.close()
+    with _get_conn() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO guild_settings (guild_id, features, updated_at) VALUES (?, ?, datetime('now'))",
+            (str(guild_id), json.dumps(features))
+        )
 
 
 def update_feature(guild_id: str, feature: str, enabled: bool) -> dict:
@@ -148,27 +163,20 @@ def set_log_enabled(guild_id: str, log_key: str, enabled: bool) -> None:
 
 
 def add_warn(guild_id: str, user_id: str, mod_id: str, reason: str = "") -> int:
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute(
-        "INSERT INTO warns (guild_id, user_id, mod_id, reason) VALUES (?, ?, ?, ?)",
-        (str(guild_id), str(user_id), str(mod_id), (reason or "Ei syytä")),
-    )
-    warn_id = c.lastrowid
-    conn.commit()
-    conn.close()
-    return int(warn_id or 0)
+    with _get_conn() as conn:
+        c = conn.execute(
+            "INSERT INTO warns (guild_id, user_id, mod_id, reason) VALUES (?, ?, ?, ?)",
+            (str(guild_id), str(user_id), str(mod_id), (reason or "Ei syytä")),
+        )
+        return int(c.lastrowid or 0)
 
 
 def get_user_warns(guild_id: str, user_id: str) -> list[dict]:
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute(
-        "SELECT id, mod_id, reason, created_at FROM warns WHERE guild_id = ? AND user_id = ? ORDER BY created_at DESC",
-        (str(guild_id), str(user_id)),
-    )
-    rows = c.fetchall()
-    conn.close()
+    with _get_conn() as conn:
+        rows = conn.execute(
+            "SELECT id, mod_id, reason, created_at FROM warns WHERE guild_id = ? AND user_id = ? ORDER BY created_at DESC",
+            (str(guild_id), str(user_id)),
+        ).fetchall()
     return [{"id": r[0], "mod_id": r[1], "reason": r[2], "created_at": r[3]} for r in rows]
 
 
@@ -224,10 +232,6 @@ def set_ticket_settings(guild_id: str, staff_role_id: str | None = None, categor
 
 
 def clear_warns(guild_id: str, user_id: str) -> int:
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("DELETE FROM warns WHERE guild_id = ? AND user_id = ?", (str(guild_id), str(user_id)))
-    deleted = int(c.rowcount or 0)
-    conn.commit()
-    conn.close()
-    return deleted
+    with _get_conn() as conn:
+        c = conn.execute("DELETE FROM warns WHERE guild_id = ? AND user_id = ?", (str(guild_id), str(user_id)))
+        return int(c.rowcount or 0)

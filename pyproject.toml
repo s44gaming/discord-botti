@@ -1,0 +1,6 @@
+[project]
+name = "discordbotti"
+version = "1.0.0"
+description = "Monipalvelin Discord-botti web-hallinnalla"
+readme = "README.md"
+requires-python = ">=3.8"
