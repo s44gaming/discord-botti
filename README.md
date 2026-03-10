@@ -7,7 +7,7 @@ Python-pohjainen Discord-botti (Xevrion), joka tukee useaa palvelinta ja web-kä
 Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi ilman omaa asennusta:
 
 - **[Botin hallintapaneeli](https://discordbotti.s44gamingsquad.com/dashboard)** – kirjaudu Discordilla ja hallitse asetuksia
-- **[Kutsu botti palvelimelle](https://discordbotti.s44gamingsquad.com/invite)** – lisää Xevrion omaan Discord-palvelimeesi
+- **[Kutsu botti palvelimelle](https://discord.com/oauth2/authorize?client_id=1468083482398818516&scope=bot&permissions=0)** – lisää Xevrion omaan Discord-palvelimeesi
 
 
 ## Ominaisuudet
