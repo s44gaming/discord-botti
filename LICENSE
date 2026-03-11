@@ -1,31 +1,103 @@
-Non-Commercial License
+S44Gaming Non-Commercial Source License (SNCSL)
 
 Copyright (c) 2026 S44Gaming. All rights reserved.
 
-S44Gaming retains full copyright to this Software. Modification and distribution
-are permitted for non-commercial use, but you may not claim the Software or
-derivative works as your own. Original authorship must be attributed to
-S44Gaming.
+1. Ownership
+
+The Software and all original source code, assets, and documentation are
+the intellectual property of S44Gaming. S44Gaming retains full copyright
+and ownership of the Software at all times.
+
+Modifying this Software does NOT transfer ownership and does NOT remove
+or replace the original copyright.
+
+2. Permission for Non-Commercial Use
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software for non-commercial purposes only, subject to the following
-conditions:
+of this Software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software for NON-COMMERCIAL purposes only,
+subject to the following conditions.
 
-- The Software may be used, copied, modified, merged, and distributed for
-  personal or educational use.
-- Commercial use, selling, sublicensing for a fee, or any use intended to
-  generate profit is permitted only with S44Gaming's explicit written consent.
-- Modified versions must retain attribution to S44Gaming as the original
-  author. You may not claim the Software or any derivative works as your own.
+3. Attribution Requirement
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+All copies of the Software, including modified versions or derivative works,
+must clearly credit:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+"Original Software by S44Gaming"
+
+This attribution must be visible in at least one of the following:
+
+* the repository README
+* the documentation
+* the software credits
+* the license file
+
+You may not claim the Software or any derivative work as your own original work.
+
+4. Redistribution of Modified Versions
+
+If you distribute a modified version of the Software, you MUST:
+
+* Include this license file unchanged
+* Clearly state that your version is modified
+* Credit S44Gaming as the original author
+* Provide a visible changelog describing your modifications
+
+Example notice:
+
+"This project is a modified version of software originally created by S44Gaming."
+
+5. No Rebranding
+
+You may not remove references to S44Gaming or present the Software
+as if it were entirely your own creation.
+
+Renaming the project is allowed ONLY if the original author attribution
+remains clearly visible.
+
+6. Strict Non-Commercial Restriction
+
+Commercial use of this Software or any modified version is strictly prohibited
+without explicit written permission from S44Gaming.
+
+This restriction includes but is not limited to:
+
+* selling the Software
+* charging for access
+* monetizing downloads
+* paid distribution
+* paid mods
+* donations required for access
+* paywalled versions
+
+This restriction explicitly includes platforms such as:
+
+* Patreon
+* Steam
+* itch.io
+* Epic Games Store
+* any digital marketplace
+* subscription platforms
+* crowdfunding platforms
+
+Even if the Software has been modified, commercial use is NOT allowed
+without written permission from S44Gaming.
+
+7. License Preservation
+
+This license and copyright notice must remain included in all copies
+or substantial portions of the Software.
+
+Removing or altering this license is not permitted.
+
+8. Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
