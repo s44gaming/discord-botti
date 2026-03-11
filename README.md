@@ -13,7 +13,7 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 ## Ominaisuudet
 
 - **Monipalvelin** – sama botti usealla serverillä, kaikki asetukset palvelinkohtaisia
-- **Web-dashboard** – hallitse kaikkia ominaisuuksia palvelin kerrallaan
+- **Web-dashboard** – hallitse kaikkia ominaisuuksia palvelin kerrallaan, tumma/vaalea teema (tallentuu selaimen localStorage)
 - **Ylläpitäjä-tarkistus** – vain palvelimen Administratorit näkevät hallinnan
 - **Peruskomentoja** – ping, info, tervehdys, hallinta, komennot-lista
 - **Kutsulinkit** – /kutsu (Apply bot), /lähetäkutsu (yhteisön kutsu kanavalle)
@@ -24,7 +24,7 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 - **Minipelit** – kolikko, noppa, 8-pallo, kivi-paperi-sakset, arpa, ruletti – kytkettävissä webistä
 - **FiveM-palvelimen tila** – /fivem näyttää pelaajamäärän jne., asetukset (host, port, status-kanava) webistä
 - **Twitch stream -ilmoitukset** – ilmoitus kun seuraamasi streameri aloittaa striimin, streamerit ja kanava webistä
-- **Kehittäjäportaali** – DEV_USER_IDS -käyttäjille: bottin tilat, konsoliloki, käynnistä/sammuta, palvelimen poisto
+- **Kehittäjäportaali** – DEV_USER_IDS -käyttäjille: tilastot (CPU, muisti, latenssihistoria), virheloki, tietokanta-tilastot, riippuvuuksien versiot, varmuuskopio (asetusten export), API-dokumentaatio, konsoliloki (suodatin), käynnistä/sammuta, palvelimen poisto
 
 ## Vaatimukset
 
@@ -35,8 +35,9 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
   - requests >= 2.31.0
   - python-dotenv >= 1.0.0
   - cryptography >= 42.0.0 (botin tietojen salattu tallennus)
+  - psutil >= 5.9.0 (CPU- ja muistikäyttö kehittäjäportaalissa)
 
-Vapaaehtoiset: `discord.py[speed]` nopeampaan JSON-käsittelyyn, `psutil` muistin käytön näyttämiseen kehittäjäportaalissa.
+Vapaaehtoinen: `discord.py[speed]` nopeampaan JSON-käsittelyyn.
 
 ## Nopea käynnistys
 
@@ -129,6 +130,7 @@ Tämä käynnistää:
 2. **Kirjaudu Discordilla** – tarvitaan Discord-tili
 3. Valitse palvelin – näkyvät vain palvelimet, joilla sinulla on **Administrator**-oikeudet
 4. Hallitse asetuksia – muutokset astuvat voimaan heti
+5. **Teema** – vaihda tumma/vaalea teema headerin napilla (tallentuu selaimen localStorageen)
 
 ### Webissä hallittavat asetukset (palvelinkohtaisesti)
 
@@ -144,11 +146,23 @@ Tämä käynnistää:
 | **Levellijärjestelmä** | Päälle/pois, XP-asetukset, tasoroolit, äänekäs XP |
 | **Tiketit** | Staff-rooli, kategoria tiketille, kanava josta tiketti avataan |
 
+### Teema (dashboard)
+
+Dashboardissa voit vaihtaa tumman ja vaalean teeman välillä. Valinta tallentuu selaimen localStorageen ja pätee dashboardille sekä palvelimen asetuksille.
+
 ### Kehittäjäportaali (vain DEV_USER_IDS)
 
 Jos Discord-käyttäjä-IDsi on `.env`:ssä `DEV_USER_IDS`-listalla, näet linkin **Kehittäjäportaali**. Siellä voit:
-- nähdä bottin tilat (latenssi, palvelimet, muisti, ajoaika)
-- tarkastella konsolilokia
+- nähdä bottin tilat (latenssi, palvelimet, muisti, CPU %, ajoaika, komennot)
+- latenssin historian graafina
+- tarkastella virhelokia (käsittelemättömät virheet tallentuvat automaattisesti)
+- tyhjentää virhelokin
+- tarkastella tietokannan tilastoja (taulut, rivimäärät, koko)
+- nähdä ympäristömuuttujien avaimet (ei arvoja)
+- nähdä riippuvuuksien versiot (discord.py, flask, jne.)
+- ladata varmuuskopion (kaikki palvelinasetukset JSON-tiedostona)
+- tarkastella API-dokumentaatiota (endpointit)
+- tarkastella konsolilokia suodattimella
 - käynnistää/sammuttaa botin tai koko sovelluksen
 - poistaa bottin palvelimelta
 - muokata botin tietoja (kuvaus, kehittäjät, Apply bot -linkki, yhteisön kutsu) – vaatii muokkaussalasanan
