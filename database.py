@@ -606,4 +606,47 @@ def count_user_reminders(guild_id: str, user_id: str) -> int:
         ).fetchone()
     return int(row[0]) if row else 0
 
+
+def get_db_stats() -> dict | None:
+    """Palauttaa tietokannan tilastot (taulut, rivimäärät). None jos ei saatavilla."""
+    try:
+        with _get_conn() as conn:
+            tables = [
+                "guild_settings", "users", "warns", "user_xp",
+                "afk_users", "reminders"
+            ]
+            stats = {}
+            for t in tables:
+                try:
+                    row = conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()
+                    stats[t] = int(row[0]) if row else 0
+                except Exception:
+                    stats[t] = 0
+            # Levyn käyttö (SQLite)
+            try:
+                size = os.path.getsize(DB_PATH)
+                stats["db_size_bytes"] = size
+                stats["db_size_mb"] = round(size / 1024 / 1024, 2)
+            except Exception:
+                stats["db_size_bytes"] = None
+                stats["db_size_mb"] = None
+            return stats
+    except Exception:
+        return None
+
+
+def get_all_guild_settings_for_backup() -> dict:
+    """Palauttaa kaikki palvelimien asetukset varmuuskopiota varten."""
+    with _get_conn() as conn:
+        rows = conn.execute(
+            "SELECT guild_id, features, updated_at FROM guild_settings"
+        ).fetchall()
+    return {
+        row[0]: {
+            "features": json.loads(row[1]) if row[1] else {},
+            "updated_at": row[2],
+        }
+        for row in rows
+    }
+
 # Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg

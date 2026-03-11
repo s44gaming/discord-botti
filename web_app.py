@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import secrets
@@ -19,6 +20,20 @@ _cache_lock = threading.Lock()
 app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 app.config["PERMANENT_SESSION_LIFETIME"] = 86400
+
+
+@app.errorhandler(Exception)
+def _capture_unhandled(exc):
+    """Tallentaa käsittelemättömät virheet kehittäjäportaalin virhelokiin."""
+    from werkzeug.exceptions import HTTPException
+    if isinstance(exc, HTTPException):
+        return exc
+    try:
+        import shared_state
+        shared_state.add_error(exc, "Flask")
+    except Exception:
+        pass
+    return jsonify({"error": str(exc)}), 500
 
 DISCORD_API = "https://discord.com/api/v10"
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID")
@@ -359,8 +374,14 @@ def api_dev_stats():
             import psutil
             proc = psutil.Process(os.getpid())
             data["memory_mb"] = round(proc.memory_info().rss / 1024 / 1024, 1)
+            data["cpu_percent"] = round(proc.cpu_percent(interval=0.1), 1)
         except Exception:
             data["memory_mb"] = None
+            data["cpu_percent"] = None
+        # Latenssin historia (graafille)
+        if data.get("latency_ms") is not None:
+            shared_state.push_latency_sample(data["latency_ms"])
+        data["latency_history"] = shared_state.get_latency_history()
         if bot and hasattr(bot, "user") and bot.user:
             data["bot_username"] = str(bot.user)
             data["bot_id"] = str(bot.user.id)
@@ -501,6 +522,123 @@ def api_dev_shutdown():
 def api_dev_restart():
     threading.Timer(1.5, _do_restart).start()
     return jsonify({"success": True, "message": "Botti käynnistetään uudelleen..."})
+
+
+@app.route("/api/dev/errors")
+@login_required
+@dev_portal_required
+def api_dev_errors():
+    try:
+        import shared_state
+        limit = min(100, max(1, request.args.get("limit", 20, type=int)))
+        return jsonify({"errors": shared_state.get_recent_errors(limit)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/dev/errors/clear", methods=["POST"])
+@login_required
+@dev_portal_required
+def api_dev_errors_clear():
+    try:
+        import shared_state
+        shared_state.clear_errors()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/dev/db-stats")
+@login_required
+@dev_portal_required
+def api_dev_db_stats():
+    try:
+        stats = database.get_db_stats()
+        if stats is None:
+            return jsonify({"error": "Tietokantaa ei saatavilla", "ok": False}), 500
+        return jsonify({"ok": True, "stats": stats})
+    except Exception as e:
+        return jsonify({"error": str(e), "ok": False}), 500
+
+
+@app.route("/api/dev/env-keys")
+@login_required
+@dev_portal_required
+def api_dev_env_keys():
+    """Listaa ympäristömuuttujien nimet (ei arvoja) – tietoturvasyistä."""
+    try:
+        keys = sorted([k for k in os.environ.keys() if not k.startswith("SECRET") and "PASSWORD" not in k.upper() and "TOKEN" not in k.upper()])
+        return jsonify({"keys": keys})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/dev/dependencies")
+@login_required
+@dev_portal_required
+def api_dev_dependencies():
+    """Listaa asennettujen riippuvuuksien versiot."""
+    try:
+        deps = {}
+        for name in ["discord", "flask", "requests", "cryptography", "psutil", "dotenv"]:
+            try:
+                if name == "dotenv":
+                    import dotenv
+                    deps["python-dotenv"] = getattr(dotenv, "__version__", "?")
+                elif name == "discord":
+                    import discord
+                    deps["discord.py"] = discord.__version__
+                else:
+                    m = __import__(name)
+                    deps[name] = getattr(m, "__version__", "?")
+            except ImportError:
+                deps[name] = None
+        return jsonify(deps)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/dev/backup")
+@login_required
+@dev_portal_required
+def api_dev_backup():
+    """Palauttaa kaikki palvelinasetukset JSON-muodossa (varmuuskopio)."""
+    try:
+        data = database.get_all_guild_settings_for_backup()
+        from flask import Response
+        return Response(
+            json.dumps(data, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={"Content-Disposition": "attachment; filename=bot_backup.json"}
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/dev/api-docs")
+@login_required
+@dev_portal_required
+def api_dev_api_docs():
+    """Listaa kehittäjäportaalin API-endpointit."""
+    docs = [
+        {"method": "GET", "path": "/api/dev/stats", "desc": "Bottin tilastot ja järjestelmätiedot"},
+        {"method": "GET", "path": "/api/dev/console", "desc": "Konsoliloki (param: limit)"},
+        {"method": "POST", "path": "/api/dev/console/clear", "desc": "Tyhjennä konsoli"},
+        {"method": "GET", "path": "/api/dev/bot-info", "desc": "Botin metadata (kuvaus, kehittäjät, kutsu)"},
+        {"method": "POST", "path": "/api/dev/bot-info/save", "desc": "Tallenna botin tiedot (vaatii salasanan)"},
+        {"method": "POST", "path": "/api/dev/start", "desc": "Käynnistä botti"},
+        {"method": "POST", "path": "/api/dev/shutdown", "desc": "Sammuta vain botti"},
+        {"method": "POST", "path": "/api/dev/restart", "desc": "Käynnistä koko sovellus uudelleen"},
+        {"method": "POST", "path": "/api/dev/guild/<id>/leave", "desc": "Poista botti palvelimelta"},
+        {"method": "GET", "path": "/api/dev/errors", "desc": "Viimeisimmät virheet (param: limit)"},
+        {"method": "POST", "path": "/api/dev/errors/clear", "desc": "Tyhjennä virheloki"},
+        {"method": "GET", "path": "/api/dev/db-stats", "desc": "Tietokannan tilastot"},
+        {"method": "GET", "path": "/api/dev/env-keys", "desc": "Ympäristömuuttujien nimet (ei arvoja)"},
+        {"method": "GET", "path": "/api/dev/dependencies", "desc": "Riippuvuuksien versiot"},
+        {"method": "GET", "path": "/api/dev/backup", "desc": "Lataa asetusten varmuuskopio JSON"},
+        {"method": "GET", "path": "/api/dev/api-docs", "desc": "Tämä dokumentaatio"},
+    ]
+    return jsonify(docs)
 
 
 @app.route("/api/dev/guild/<int:guild_id>/leave", methods=["POST"])

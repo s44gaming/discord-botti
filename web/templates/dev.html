@@ -37,6 +37,19 @@
         .sys-info { font-family: var(--font-mono); font-size: 0.85rem; }
         .sys-info dt { color: var(--text-muted); margin-top: 0.5rem; }
         .sys-info dd { margin: 0.1rem 0 0; }
+        .collapsible { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; overflow: hidden; }
+        .collapsible-head { padding: 0.75rem 1.25rem; background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+        .collapsible-head:hover { background: var(--surface-hover); }
+        .collapsible-head::after { content: '▾'; color: var(--text-muted); transition: transform 0.2s; }
+        .collapsible.collapsed .collapsible-head::after { transform: rotate(-90deg); }
+        .collapsible-body { padding: 1.25rem; border-top: 1px solid var(--border); }
+        .collapsible.collapsed .collapsible-body { display: none; }
+        .error-item { background: #1a0a0a; border: 1px solid #4a2020; border-radius: var(--radius); padding: 1rem; margin-bottom: 0.75rem; font-family: var(--font-mono); font-size: 0.8rem; white-space: pre-wrap; word-break: break-all; }
+        .error-item .err-ts { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 0.25rem; }
+        .latency-chart { display: flex; align-items: flex-end; gap: 2px; height: 60px; margin-top: 0.5rem; }
+        .latency-bar { flex: 1; min-width: 2px; background: var(--accent); border-radius: 1px; opacity: 0.8; }
+        .theme-toggle { padding: 0.4rem 0.75rem; font-size: 0.85rem; }
+        body.light-theme { --bg: #f4f4f5; --surface: #fff; --surface-hover: #f4f4f5; --border: #e4e4e7; --text: #18181b; --text-muted: #71717a; --accent-dim: rgba(124, 58, 237, 0.12); }
     </style>
 </head>
 <body>
@@ -44,6 +57,7 @@
         <a href="/dashboard" class="brand">Xevrion</a>
         <nav class="nav">
             <a href="/dashboard" class="btn btn-ghost">&larr; Dashboard</a>
+            <button type="button" class="btn btn-ghost theme-toggle" id="theme-toggle" title="Vaihda teema">🌙 Tumma</button>
             <span class="user-badge">{{ user.username }}</span>
             <a href="/logout" class="btn btn-ghost">Kirjaudu ulos</a>
         </nav>
@@ -63,6 +77,7 @@
                 <div class="dev-stat"><div class="dev-stat-label">Ajoaika</div><div class="dev-stat-value" id="stat-uptime">–</div></div>
                 <div class="dev-stat"><div class="dev-stat-label">Komennot</div><div class="dev-stat-value" id="stat-commands">–</div></div>
                 <div class="dev-stat"><div class="dev-stat-label">Muisti</div><div class="dev-stat-value" id="stat-memory">–</div></div>
+                <div class="dev-stat"><div class="dev-stat-label">CPU %</div><div class="dev-stat-value" id="stat-cpu">–</div></div>
             </div>
 
             <h2 class="subsection-title">Hallinta</h2>
@@ -111,6 +126,12 @@
                 </form>
             </div>
 
+            <h2 class="subsection-title">Latenssin historia</h2>
+            <p class="muted subsection-desc">Viimeisimmät latenssi-arvot (viiva-asettelu)</p>
+            <div class="panel">
+                <div class="latency-chart" id="latency-chart"></div>
+            </div>
+
             <h2 class="subsection-title">Palvelimet</h2>
             <div class="panel">
                 <table class="guild-table" id="guild-table">
@@ -120,8 +141,53 @@
                 <p class="muted" id="guilds-empty" style="display:none; margin:0.5rem 0 0;">Ei palvelimia tai botti ei ole vielä online.</p>
             </div>
 
+            <h2 class="subsection-title">Virheloki</h2>
+            <p class="muted subsection-desc">Viimeisimmät virheet (Flask, botti). Käsittelemättömät virheet tallentuvat automaattisesti.</p>
+            <div class="panel">
+                <div class="console-toolbar" style="margin-bottom:1rem;">
+                    <button type="button" class="btn btn-ghost btn-sm" id="btn-errors-clear">Tyhjennä virheet</button>
+                </div>
+                <div id="errors-list"></div>
+            </div>
+
+            <div class="collapsible" id="coll-db">
+                <div class="collapsible-head">Tietokanta – tilastot ja tilanne</div>
+                <div class="collapsible-body">
+                    <p id="db-stats-text" class="muted">Ladataan…</p>
+                </div>
+            </div>
+            <div class="collapsible" id="coll-env">
+                <div class="collapsible-head">Ympäristömuuttujat (avaimet, ei arvoja)</div>
+                <div class="collapsible-body">
+                    <p id="env-keys-text" class="muted">Ladataan…</p>
+                </div>
+            </div>
+            <div class="collapsible" id="coll-deps">
+                <div class="collapsible-head">Riippuvuudet – versiot</div>
+                <div class="collapsible-body">
+                    <p id="deps-text" class="muted">Ladataan…</p>
+                </div>
+            </div>
+            <div class="collapsible" id="coll-backup">
+                <div class="collapsible-head">Varmuuskopio</div>
+                <div class="collapsible-body">
+                    <p class="muted">Lataa kaikki palvelinasetukset JSON-tiedostona.</p>
+                    <a href="/api/dev/backup" class="btn btn-primary" download>Lataa backup.json</a>
+                </div>
+            </div>
+            <div class="collapsible" id="coll-api">
+                <div class="collapsible-head">API-dokumentaatio</div>
+                <div class="collapsible-body">
+                    <table class="guild-table">
+                        <thead><tr><th>Metodi</th><th>Polku</th><th>Kuvaus</th></tr></thead>
+                        <tbody id="api-docs-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <h2 class="subsection-title">Konsoliloki</h2>
             <div class="console-toolbar">
+                <input type="text" id="console-filter" placeholder="Suodata rivejä…" style="padding:0.4rem 0.75rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); min-width:180px; font-size:0.85rem;">
                 <label><input type="checkbox" id="console-autoscroll" checked> Auto-scroll</label>
                 <button type="button" class="btn btn-ghost btn-sm" id="btn-console-clear">Tyhjennä</button>
                 <button type="button" class="btn btn-ghost btn-sm" id="btn-console-copy">Kopioi</button>
@@ -156,6 +222,7 @@
                 document.getElementById('stat-uptime').textContent = fmtTime(data.uptime_seconds);
                 document.getElementById('stat-commands').textContent = data.command_count != null ? data.command_count : '–';
                 document.getElementById('stat-memory').textContent = data.memory_mb != null ? data.memory_mb + ' MB' : '–';
+                document.getElementById('stat-cpu').textContent = data.cpu_percent != null ? data.cpu_percent + ' %' : '–';
 
                 document.getElementById('si-python').textContent = data.python_version || '–';
                 document.getElementById('si-discord').textContent = data.discord_version || '–';
@@ -187,16 +254,30 @@
                 }
 
                 document.getElementById('btn-start').style.display = data.bot_ready ? 'none' : 'inline-flex';
+
+                if (data.latency_history && data.latency_history.length) {
+                    const chart = document.getElementById('latency-chart');
+                    const vals = data.latency_history.map(h => h.ms);
+                    const max = Math.max(...vals, 1);
+                    chart.innerHTML = vals.map(v => `<div class="latency-bar" style="height:${Math.max(2, (v / max) * 100)}%" title="${v} ms"></div>`).join('');
+                }
             }).catch(() => {});
         };
 
+        let _consoleLines = [];
         const fetchConsole = () => {
             fetch('/api/dev/console?limit=300').then(r => r.json()).then(data => {
-                const box = document.getElementById('console');
-                const wasBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
-                box.innerHTML = (data.lines || []).map(l => `<div class="console-line">${escapeHtml(l)}</div>`).join('');
-                if (document.getElementById('console-autoscroll').checked && wasBottom) box.scrollTop = box.scrollHeight;
+                _consoleLines = data.lines || [];
+                renderConsole();
             }).catch(() => {});
+        };
+        const renderConsole = () => {
+            const filter = (document.getElementById('console-filter')?.value || '').trim().toLowerCase();
+            const box = document.getElementById('console');
+            const wasBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
+            const lines = filter ? _consoleLines.filter(l => l.toLowerCase().includes(filter)) : _consoleLines;
+            box.innerHTML = lines.map(l => `<div class="console-line">${escapeHtml(l)}</div>`).join('');
+            if (document.getElementById('console-autoscroll')?.checked && wasBottom) box.scrollTop = box.scrollHeight;
         };
 
         document.getElementById('btn-start').onclick = () => {
@@ -219,6 +300,61 @@
         document.getElementById('btn-console-clear').onclick = () => {
             fetch('/api/dev/console/clear', { method: 'POST' }).then(() => fetchConsole());
         };
+        document.getElementById('console-filter')?.addEventListener('input', renderConsole);
+
+        const fetchErrors = () => {
+            fetch('/api/dev/errors?limit=50').then(r => r.json()).then(data => {
+                const el = document.getElementById('errors-list');
+                if (data.error) { el.innerHTML = '<span class="muted">' + escapeHtml(data.error) + '</span>'; return; }
+                const errs = data.errors || [];
+                el.innerHTML = errs.length ? errs.map(e => `<div class="error-item"><div class="err-ts">${escapeHtml(e.ts)} ${escapeHtml(e.context || '')}</div>${escapeHtml(e.msg)}</div>`).join('') : '<span class="muted">Ei virheitä</span>';
+            }).catch(() => {});
+        };
+        document.getElementById('btn-errors-clear').onclick = () => {
+            fetch('/api/dev/errors/clear', { method: 'POST' }).then(() => fetchErrors());
+        };
+
+        const fetchDbStats = () => {
+            fetch('/api/dev/db-stats').then(r => r.json()).then(data => {
+                const el = document.getElementById('db-stats-text');
+                if (!data.ok || !data.stats) { el.textContent = data.error || 'Ei tietoja'; return; }
+                const s = data.stats;
+                el.innerHTML = Object.entries(s).filter(([k]) => k !== 'db_size_bytes').map(([k, v]) => `<strong>${k}</strong>: ${v}`).join(' &middot; ') + (s.db_size_mb != null ? ' &middot; Koko: ' + s.db_size_mb + ' MB' : '');
+            }).catch(() => {});
+        };
+        const fetchEnvKeys = () => {
+            fetch('/api/dev/env-keys').then(r => r.json()).then(data => {
+                const el = document.getElementById('env-keys-text');
+                if (data.error) { el.textContent = data.error; return; }
+                el.textContent = (data.keys || []).join(', ') || 'Ei avaimia';
+            }).catch(() => {});
+        };
+        const fetchDeps = () => {
+            fetch('/api/dev/dependencies').then(r => r.json()).then(data => {
+                const el = document.getElementById('deps-text');
+                if (data.error) { el.textContent = data.error; return; }
+                el.innerHTML = Object.entries(data).map(([k, v]) => `<span style="margin-right:1rem;"><strong>${escapeHtml(k)}</strong>: ${v != null ? escapeHtml(String(v)) : '–'}</span>`).join('') || '–';
+            }).catch(() => {});
+        };
+        const fetchApiDocs = () => {
+            fetch('/api/dev/api-docs').then(r => r.json()).then(data => {
+                const tbody = document.getElementById('api-docs-body');
+                tbody.innerHTML = (Array.isArray(data) ? data : []).map(d => `<tr><td>${escapeHtml(d.method)}</td><td><code>${escapeHtml(d.path)}</code></td><td>${escapeHtml(d.desc)}</td></tr>`).join('');
+            }).catch(() => {});
+        };
+
+        document.querySelectorAll('.collapsible-head').forEach(h => {
+            h.onclick = () => h.parentElement.classList.toggle('collapsed');
+        });
+        const savedTheme = localStorage.getItem('dev-portal-theme');
+        if (savedTheme === 'light') document.body.classList.add('light-theme');
+        document.getElementById('theme-toggle').onclick = () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('dev-portal-theme', isLight ? 'light' : 'dark');
+            document.getElementById('theme-toggle').textContent = isLight ? '☀️ Vaalea' : '🌙 Tumma';
+        };
+        document.getElementById('theme-toggle').textContent = document.body.classList.contains('light-theme') ? '☀️ Vaalea' : '🌙 Tumma';
         document.getElementById('btn-console-copy').onclick = () => {
             const box = document.getElementById('console');
             navigator.clipboard.writeText(box.innerText).then(() => alert('Kopioitu leikepöydälle'));
@@ -279,8 +415,14 @@
         fetchBotInfo();
         fetchStats();
         fetchConsole();
+        fetchErrors();
+        fetchDbStats();
+        fetchEnvKeys();
+        fetchDeps();
+        fetchApiDocs();
         setInterval(fetchStats, 5000);
         setInterval(fetchConsole, 3000);
+        setInterval(fetchErrors, 10000);
     </script>
 </body>
 <!-- Tekijänoikeudet S44Gaming kaikki oikeudet pidätetään. https://discord.gg/ujB4JHfgcg -->
