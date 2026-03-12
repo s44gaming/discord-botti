@@ -19,9 +19,16 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 - **Kutsulinkit** – /kutsu (Apply bot), /lähetäkutsu (yhteisön kutsu kanavalle)
 - **Moderaatio** – kick, ban, mute, varoitukset, clear – roolit ja toiminnat hallitaan webistä
 - **Serverilogit** – mod-toiminnot, jäsenet liittyy/poistuu, viestien poisto/muokkaus – kanava ja tyypit webistä
-- **Tikettijärjestelmä** – staff-rooli, kategoria ja kanava määritellään webistä
-- **Levellijärjestelmä** – taso ja XP, tasonboard – asetukset webistä
-- **Minipelit** – kolikko, noppa, 8-pallo, kivi-paperi-sakset, arpa, ruletti – kytkettävissä webistä
+- **Tikettijärjestelmä** – staff-rooli, kategoria, kanava, tiketin aiheet (pudotusvalikko), transcript-kanava suljetuille tikeille – webistä
+- **Levellijärjestelmä** – taso ja XP, tasonboard, ääni-XP, taso-roolit, kanavat ilman XP – asetukset webistä
+- **Minipelit** – kolikko, noppa, 8-pallo, kivi-paperi-sakset, arpa, ruletti, arvaa luku – kytkettävissä webistä
+- **AFK** – /afk asettaa AFK-tilan; kun mainitset AFK-käyttäjän, botti vastaa syyllä
+- **Ehdotus** – /ehdotus lähettää ehdotuksen määritellylle kanavalle
+- **Muistutus** – /muistutus asettaa muistutuksen (esim. 5m, 1h); max 7 päivää, cooldown ja raja käyttäjää kohti
+- **Arvonta** – /arvonta arpoo voittajat viestin reagoijista (mod-oikeudet)
+- **Starboard** – viestit joissa tarpeeksi ⭐ reaktioita kopioidaan erityiselle kanavalle; vähimmäisreaktiot webistä
+- **Tervetuloa- ja poistumisviestit** – viestimalli placeholdereilla ({user}, {mention}, {server}, {member_count})
+- **Autorole** – uudet jäsenet saavat automaattisesti valitut roolit
 - **FiveM-palvelimen tila** – /fivem näyttää pelaajamäärän jne., asetukset (host, port, status-kanava) webistä
 - **Twitch stream -ilmoitukset** – ilmoitus kun seuraamasi streameri aloittaa striimin, streamerit ja kanava webistä
 - **Kehittäjäportaali** – DEV_USER_IDS -käyttäjille: tilastot (CPU, muisti, latenssihistoria), virheloki, tietokanta-tilastot, riippuvuuksien versiot, varmuuskopio (asetusten export), API-dokumentaatio, konsoliloki (suodatin), käynnistä/sammuta, palvelimen poisto
@@ -136,15 +143,20 @@ Tämä käynnistää:
 
 | Osa | Asetukset |
 |-----|-----------|
-| **Komennot** | Ping, Komennot, Info, Tervehdys, Hallinta, Kutsu, Kutsuviesti, Tiketti, Taso, Tasonboard – päälle/pois |
+| **Komennot** | Ping, Info, Hallinta, Kutsu, Kutsuviesti, Tiketti, Taso, Tasonboard, minipelit, Twitch, AFK, Muistutus, Ehdotus, Arvonta jne. – päälle/pois |
 | **Minipelit** | Kolikko, Noppa, 8-pallo, Kivi-paperi-sakset, Arvaa luku, Arpa, Ruletti – päälle/pois |
 | **FiveM** | Palvelimen osoite, portti (oletus 30120), kanava johon status voidaan lähettää |
 | **Twitch** | Seuratut streamerit (käyttäjänimet), kanava johon ilmoitukset lähetetään |
 | **Moderaatio** | Moderaattoriroolit, yksittäisten mod-toimintojen päälle/pois |
 | **Logit** | Logikanava, lokityypit (mod-toiminnot, jäsen liittyy/poistuu, viestin poisto/muokkaus) |
-| **Tervetuloa** | Päälle/pois, tervetulokanava |
-| **Levellijärjestelmä** | Päälle/pois, XP-asetukset, tasoroolit, äänekäs XP |
-| **Tiketit** | Staff-rooli, kategoria tiketille, kanava josta tiketti avataan |
+| **Tervetuloa** | Päälle/pois, kanava, viestimalli ({user}, {mention}, {server}, {member_count}) |
+| **Poistumisviesti** | Päälle/pois, kanava, viestimalli ({user}, {server}) |
+| **Ehdotus** | Ehdotuskanava |
+| **AFK, Arvonta, Muistutus** | Päälle/pois; muistutuksille: max/käyttäjä, cooldown (sek) |
+| **Autorole** | Roolit joita uudet jäsenet saavat automaattisesti |
+| **Levellijärjestelmä** | Päälle/pois, XP/viesti, cooldown, ääni-XP, taso-roolit, kanavat ilman XP |
+| **Tiketit** | Staff-rooli, kategoria, kanava, transcript-kanava, tiketin aiheet (pudotusvalikko), paneelin otsikko ja ohjeteksti |
+| **Starboard** | Kanava, vähimmäisreaktiot (⭐) |
 
 ### Teema (dashboard)
 
@@ -217,6 +229,15 @@ Jos Discord-käyttäjä-IDsi on `.env`:ssä `DEV_USER_IDS`-listalla, näet linki
 | `/taso` | Näytä taso ja XP |
 | `/tasonboard` | TasoTOP-10 |
 
+### AFK, Ehdotus, Muistutus, Arvonta
+
+| Komento | Kuvaus |
+|---------|--------|
+| `/afk` | Aseta AFK-tila (valinnainen syy). Kun mainitset AFK-käyttäjän, botti vastaa syyllä. |
+| `/ehdotus` | Lähetä ehdotus ylläpidolle – lähetetään ehdotuskanavalle (aseta webistä). |
+| `/muistutus` | Aseta muistutus: aika (esim. 5m, 1h, 1h30m) ja viesti. Minimi 10 s, max 7 päivää. |
+| `/arvonta` | Arvo voittajat viestin reagoijista (vaatii mod-oikeudet). Parametrit: määrä (1–20), viestin ID. |
+
 ### FiveM
 
 | Komento | Kuvaus |
@@ -256,18 +277,25 @@ Ilmoituksessa näkyy striimin nimi, peli, katsojamäärä ja linkki Twitchiin. J
 
 | Komento | Kuvaus |
 |---------|--------|
-| `/tiketti_paneeli` | Lähettää "Avaa tiketti" -viestin webistä valituille kanavalle (vain ylläpitäjille) |
+| `/tiketti_paneeli` | Lähettää tiketti-paneelin webistä valituille kanavalle (vain ylläpitäjille) |
 
 **Miten tikettijärjestelmä toimii**
 
 1. **Aseta web-dashboardissa** (Tikettijärjestelmä -osio):
    - **Rooli joka näkee tiketit** – rooli (esim. Staff), joka pääsee vastaamaan tikeille
    - **Kategoria tiketille** – kategoria johon uudet tiketit luodaan
-   - **Kanava josta tiketti avataan** – kanava johon "Avaa tiketti" -viesti lähetetään
-2. **Ota Tikettijärjestelmä käyttöön** (Perusominaisuudet -osio)
-3. **Suorita Discordissa** `/tiketti_paneeli` – botti lähettää viestin valitulle kanavalle
-4. **Käyttäjät** painavat "Avaa tiketti" -nappia → luodaan yksityinen kanava (vain avaaja + staff näkevät)
-5. **Staff** vastaa tiketissa ja voi sulkea sen "Sulje tiketti" -napilla
+   - **Kanava josta tiketti avataan** – kanava johon paneeli lähetetään
+   - **Transcript-kanava** – suljetut tiketit tallennetaan sinne (valinnainen)
+   - **Tiketin aiheet** – pudotusvalikon aiheet (otsikko, kuvaus, emoji, rooli); jos aiheita on, käyttäjät valitsevat aiheen
+   - **Paneelin otsikko ja ohjeteksti** – näkyvät Discord-embedissä
+2. **Ota Tikettijärjestelmä käyttöön** (Komennot -osiossa Tiketti)
+3. **Suorita Discordissa** `/tiketti_paneeli` – botti lähettää paneelin valitulle kanavalle
+4. **Käyttäjät** valitsevat aiheen pudotusvalikosta ja painavat nappia → luodaan yksityinen kanava
+5. **Staff** vastaa tiketissa ja voi sulkea sen "Sulje tiketti" -napilla; suljetut tiketit tallennetaan transcript-kanavalle
+
+### Starboard
+
+Viestit joissa vähintään N ⭐ reaktiota kopioidaan automaattisesti starboard-kanavalle. Aseta web-dashboardissa (Integraatiot) starboard-kanava ja vähimmäisreaktioiden määrä (1–20). Tähtimäärä päivittyy reaktioiden muuttuessa; jos tähtimäärä putoaa alle rajan, viesti poistetaan starboardilta.
 
 ---
 
@@ -309,12 +337,19 @@ DiscordBotti/
 │   ├── taso.py
 │   ├── tiketti.py
 │   ├── minipelit.py     # kolikko, noppa, 8ball, kps, arpa, ruletti
-│   └── fivem.py         # /fivem
+│   ├── fivem.py         # /fivem
+│   ├── afk.py           # /afk
+│   ├── ehdotus.py       # /ehdotus
+│   ├── muistutus.py     # /muistutus
+│   └── arvonta.py       # /arvonta
 ├── events/
 │   ├── on_ready.py
 │   ├── server_logs.py
 │   ├── levels.py
-│   └── twitch_streams.py  # Twitch stream -ilmoitukset (taustapollaus)
+│   ├── twitch_streams.py  # Twitch stream -ilmoitukset (taustapollaus)
+│   ├── afk.py             # AFK-maininnan käsittely
+│   ├── starboard.py       # Starboard (⭐-reaktiot)
+│   └── reminders.py       # Muistutusten taustaloop
 ├── web/
 │   ├── templates/
 │   └── static/
