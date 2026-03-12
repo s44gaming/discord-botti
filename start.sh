@@ -1,19 +1,52 @@
-#!/bin/sh
-# Käynnistää Discord-botin ja web-dashboardin (Linux / macOS)
-# Käyttö: ./start.sh  tai  sh start.sh
+#!/bin/bash
+set -e
 
-cd "$(dirname "$0")"
+echo "🔄 Päivitetään järjestelmä..."
+ apt update && apt upgrade -y
 
-PYTHON=""
-if command -v python3 >/dev/null 2>&1; then
-    PYTHON=python3
-elif command -v python >/dev/null 2>&1; then
-    PYTHON=python
-fi
+echo "📦 Asennetaan peruspaketit..."
+ apt install -y \
+  python3 \
+  python3-venv \
+  python3-pip \
+  build-essential \
+  curl \
+  wget \
+  git \
+  ca-certificates
 
-if [ -z "$PYTHON" ]; then
-    echo "Virhe: Python ei löydy. Asenna Python 3.8+."
-    exit 1
-fi
+echo "🔊 Asennetaan ääni- ja mediakirjastot (FFmpeg)..."
+ apt install -y \
+  ffmpeg \
+  libopus0 \
+  libopus-dev \
+  libnacl-dev
 
-exec $PYTHON run.py
+echo "🌐 Asennetaan HTML / XML parser -riippuvuudet..."
+ apt install -y \
+  libxml2 \
+  libxml2-dev \
+  libxslt1-dev \
+  zlib1g-dev
+
+echo "🔐 Asennetaan SSL / crypto -kirjastot..."
+ apt install -y \
+  libffi-dev \
+  libssl-dev
+
+echo "🐍 Luodaan Python-virtuaaliympäristö..."
+python3 -m venv venv
+
+echo "✅ Aktivoidaan virtuaaliympäristö..."
+source venv/bin/activate
+
+echo "⬆️ Päivitetään pip..."
+pip install --upgrade pip setuptools wheel
+
+echo "📥 Asennetaan Python-riippuvuudet (requirements.txt)..."
+pip install -r requirements.txt
+
+echo ""
+echo "🚀 Käynnistetään Discord-botti (bot.py)..."
+echo "────────────────────────────────────"
+python3 run.py
