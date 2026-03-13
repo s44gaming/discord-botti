@@ -43,6 +43,7 @@
                 <a href="#tiketti" data-i18n="sect.ticket">Tiketti</a>
                 <a href="#taso" data-i18n="sect.levels">Tasot</a>
                 <a href="#integraatiot" data-i18n="sect.integrations">Integraatiot</a>
+                <a href="#serverstats" data-i18n="gs.server_stats">Palvelintilastot</a>
             </nav>
 
             <section id="yleinen" class="settings-section">
@@ -591,6 +592,46 @@
             </div>
             </div>
             </section>
+
+            <section id="serverstats" class="settings-section">
+                <h2 class="section-heading" data-i18n="gs.server_stats">Palvelintilastot</h2>
+            <div class="settings-grid">
+            <div class="settings-card">
+                <h2 data-i18n="gs.server_stats">Palvelintilastot</h2>
+                <p class="card-desc" data-i18n="gs.server_stats_desc">Ääni-/näyttökanavat jotka näyttävät palvelimen jäsenmäärän, ihmiset, online- ja offline-määrät. Kuten kuvassa: Jäsenet, Ihmiset, Online, Offline.</p>
+                <div class="ticket-row toggle-row">
+                    <label class="toggle">
+                        <input type="checkbox" id="server-stats-enabled" {% if server_stats_settings.enabled %}checked{% endif %}>
+                        <span class="toggle-track"></span>
+                    </label>
+                    <label for="server-stats-enabled" data-i18n="common.on">Päällä</label>
+                </div>
+                <div class="ticket-row">
+                    <label data-i18n="gs.server_stats_category">Kategorian nimi (esim. SERVER STATS)</label>
+                    <input type="text" id="server-stats-category" value="{{ server_stats_settings.category_name or 'SERVER STATS' }}" placeholder="SERVER STATS" class="channel-select" maxlength="100">
+                </div>
+                <div class="ticket-row">
+                    <label data-i18n="gs.server_stats_select">Valitse näytettävät tilastot</label>
+                    <div id="server-stats-checkboxes" class="features-list" style="margin-top: 0.5rem;">
+                        <label class="role-check"><input type="checkbox" value="members" {% if 'members' in (server_stats_settings.stats or []) %}checked{% endif %}> <span data-i18n="gs.stats_members">Jäsenet (kaikki)</span></label>
+                        <label class="role-check"><input type="checkbox" value="humans" {% if 'humans' in (server_stats_settings.stats or []) %}checked{% endif %}> <span data-i18n="gs.stats_humans">Ihmiset (ei botteja)</span></label>
+                        <label class="role-check"><input type="checkbox" value="online" {% if 'online' in (server_stats_settings.stats or []) %}checked{% endif %}> <span data-i18n="gs.stats_online">Online</span></label>
+                        <label class="role-check"><input type="checkbox" value="offline" {% if 'offline' in (server_stats_settings.stats or []) %}checked{% endif %}> <span data-i18n="gs.stats_offline">Offline</span></label>
+                    </div>
+                </div>
+                <h3 class="panel-title" style="margin-top: 1rem;" data-i18n="gs.server_stats_labels">Kanavien nimet</h3>
+                <p class="muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;" data-i18n="gs.server_stats_labels_desc">Näytetään esim. "Nimi: 37". Voit jättää tyhjäksi oletusnimen käyttöön.</p>
+                <div class="ticket-settings">
+                    {% set lbl = server_stats_settings.labels or {} %}
+                    <div class="ticket-row"><label>Jäsenet</label> <input type="text" id="server-stats-label-members" value="{{ lbl.get('members', 'Jäsenet') }}" placeholder="Jäsenet" class="channel-select" maxlength="50" style="max-width: 200px;"></div>
+                    <div class="ticket-row"><label>Ihmiset</label> <input type="text" id="server-stats-label-humans" value="{{ lbl.get('humans', 'Ihmiset') }}" placeholder="Ihmiset" class="channel-select" maxlength="50" style="max-width: 200px;"></div>
+                    <div class="ticket-row"><label>Online</label> <input type="text" id="server-stats-label-online" value="{{ lbl.get('online', 'Online') }}" placeholder="Online" class="channel-select" maxlength="50" style="max-width: 200px;"></div>
+                    <div class="ticket-row"><label>Offline</label> <input type="text" id="server-stats-label-offline" value="{{ lbl.get('offline', 'Offline') }}" placeholder="Offline" class="channel-select" maxlength="50" style="max-width: 200px;"></div>
+                </div>
+                <button type="button" class="btn btn-primary" id="server-stats-save" data-i18n="common.save">Tallenna</button>
+            </div>
+            </div>
+            </section>
         </section>
     </main>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
@@ -872,6 +913,34 @@
         document.getElementById('autorole-roles')?.addEventListener('change', saveAutoroleSettings);
 
         // Starboard
+        // Server stats
+        document.getElementById('server-stats-save')?.addEventListener('click', function() {
+            const enabled = document.getElementById('server-stats-enabled')?.checked ?? false;
+            const categoryName = (document.getElementById('server-stats-category')?.value || 'SERVER STATS').trim();
+            const statsCheckboxes = document.querySelectorAll('.ticket-row input[type="checkbox"][value="members"], .ticket-row input[type="checkbox"][value="humans"], .ticket-row input[type="checkbox"][value="online"], .ticket-row input[type="checkbox"][value="offline"]');
+            const stats = [];
+            const cbContainer = document.getElementById('server-stats-checkboxes');
+            if (cbContainer) {
+                cbContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb.checked) stats.push(cb.value);
+                });
+            }
+            if (!stats.length) stats.push('members', 'humans', 'online', 'offline');
+            const labels = {};
+            ['members','humans','online','offline'].forEach(k => {
+                const v = document.getElementById('server-stats-label-' + k)?.value?.trim();
+                if (v) labels[k] = v;
+            });
+            fetch(`/api/guild/${guildId}/server-stats/settings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled, category_name: categoryName, stats, labels })
+            }).then(r => {
+                if (r.ok) alert('Palvelintilastot tallennettu.');
+                else alert('Tallennus epäonnistui.');
+            });
+        });
+
         document.getElementById('starboard-save')?.addEventListener('click', function() {
             const enabled = document.getElementById('starboard-enabled')?.checked ?? true;
             const channelId = document.getElementById('starboard-channel')?.value || '';

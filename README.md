@@ -181,7 +181,7 @@ You can use S44Gaming's hosted Xevrion bot on your own server without self-hosti
 ```
 run.py, bot.py, web_app.py, database.py, config.py, bot_info.py
 commands/ (ping, komennot_lista, info, hallinta, kutsu, moderaatio, taso, tiketti, minipelit, fivem, afk, ehdotus, muistutus, arvonta, poll, avatar, userinfo, reverse)
-events/ (on_ready, server_logs, levels, twitch_streams, afk, starboard, reminders)
+events/ (on_ready, server_logs, afk, starboard, reminders)
 web/ (templates, static)
 data/ (bot.db, bot_info.txt)
 ```

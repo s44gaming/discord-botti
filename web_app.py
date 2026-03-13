@@ -748,6 +748,8 @@ def guild_settings(guild_id):
     starboard_enabled = bool(settings.get("starboard_enabled", True))
     reaction_roles_enabled = bool(settings.get("reaction_roles_enabled", False))
     reaction_roles = settings.get("reaction_roles") or []
+    # Server stats (tilastokanavat)
+    server_stats_settings = database.get_server_stats_settings(guild_id)
     # Ehdotus, AFK, Arvonta, Muistutus
     suggestion_enabled = bool(settings.get("suggestion_enabled", False))
     suggestion_channel = settings.get("suggestion_channel_id")
@@ -802,6 +804,7 @@ def guild_settings(guild_id):
         starboard_enabled=starboard_enabled,
         reaction_roles_enabled=reaction_roles_enabled,
         reaction_roles=reaction_roles,
+        server_stats_settings=server_stats_settings,
         suggestion_enabled=suggestion_enabled,
         suggestion_channel=suggestion_channel,
         afk_enabled=afk_enabled,
@@ -1107,6 +1110,45 @@ def api_set_starboard_settings(guild_id):
         channel_id = str(channel_id) if channel_id else None
     min_stars = data.get("min_stars")
     database.set_starboard_settings(guild_id, enabled=enabled, channel_id=channel_id, min_stars=min_stars)
+    return jsonify({"success": True})
+
+
+@app.route("/api/guild/<guild_id>/server-stats/settings", methods=["POST"])
+@login_required
+def api_set_server_stats_settings(guild_id):
+    import asyncio
+    guilds = get_user_guilds()
+    if not any(g["id"] == guild_id for g in guilds):
+        return jsonify({"error": "Ei oikeuksia"}), 403
+    data = request.get_json() or {}
+    enabled = data.get("enabled")
+    category_name = data.get("category_name")
+    stats = data.get("stats")
+    labels = data.get("labels")
+    if enabled is not None:
+        database.set_server_stats_settings(guild_id, enabled=bool(enabled))
+    if category_name is not None:
+        database.set_server_stats_settings(guild_id, category_name=str(category_name).strip()[:100] or "SERVER STATS")
+    if stats is not None and isinstance(stats, list):
+        valid = ("members", "humans", "online", "offline")
+        stats = [s for s in stats if str(s) in valid]
+        if stats:
+            database.set_server_stats_settings(guild_id, stats=stats)
+    if labels is not None and isinstance(labels, dict):
+        database.set_server_stats_settings(guild_id, labels=labels)
+    # Luo/päivitä kanavat heti Tallenna-nappia painettaessa
+    try:
+        import shared_state
+        from events import server_stats
+        bot = shared_state.get_bot()
+        if bot and bot.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(
+                server_stats.update_guild_server_stats_now(bot, int(guild_id)),
+                bot.loop
+            )
+            future.result(timeout=15)
+    except Exception:
+        pass
     return jsonify({"success": True})
 
 

@@ -27,6 +27,7 @@ class Bot(commands.Bot):
         intents.members = True
         intents.message_content = True
         intents.voice_states = True
+        intents.presences = True  # Online/offline-tilastot (vaatii Developer Portalissa)
         super().__init__(
             command_prefix="!",
             intents=intents,
@@ -102,6 +103,9 @@ class Bot(commands.Bot):
 
     def get_reaction_roles_settings(self, guild_id: int) -> dict:
         return self._db.get_reaction_roles_settings(str(guild_id))
+
+    def get_server_stats_settings(self, guild_id: int) -> dict:
+        return self._db.get_server_stats_settings(str(guild_id))
 
     def _presence_text(self) -> str:
         """Status-teksti: palvelimien määrä, kuvaus, kehittäjät, kutsu (max 128 merkkiä)."""

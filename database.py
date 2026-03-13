@@ -686,6 +686,65 @@ def set_reaction_roles_settings(guild_id: str, enabled: bool | None = None, role
     set_guild_settings(guild_id, s)
 
 
+DEFAULT_STAT_LABELS = {
+    "members": "Jäsenet",
+    "humans": "Ihmiset",
+    "online": "Online",
+    "offline": "Offline",
+}
+
+
+def get_server_stats_settings(guild_id: str) -> dict:
+    """Palvelimen tilastokanavat: enabled, category_id, category_name, stats, channel_ids, labels."""
+    settings = get_guild_settings(guild_id)
+    stats = settings.get("server_stats_stats") or ["members", "humans", "online", "offline"]
+    if not isinstance(stats, list):
+        stats = ["members", "humans", "online", "offline"]
+    channel_ids = settings.get("server_stats_channel_ids") or {}
+    if not isinstance(channel_ids, dict):
+        channel_ids = {}
+    labels = settings.get("server_stats_labels") or {}
+    if not isinstance(labels, dict):
+        labels = {}
+    labels = {k: (str(v).strip()[:50] or DEFAULT_STAT_LABELS.get(k, k)) for k, v in labels.items()}
+    return {
+        "enabled": bool(settings.get("server_stats_enabled", False)),
+        "category_id": settings.get("server_stats_category_id"),
+        "category_name": (settings.get("server_stats_category_name") or "SERVER STATS").strip()[:100],
+        "stats": [s for s in stats if s in ("members", "humans", "online", "offline")] or ["members", "humans", "online", "offline"],
+        "channel_ids": {str(k): str(v) for k, v in channel_ids.items()},
+        "labels": {**{k: DEFAULT_STAT_LABELS[k] for k in DEFAULT_STAT_LABELS}, **labels},
+    }
+
+
+def set_server_stats_settings(
+    guild_id: str,
+    enabled: bool | None = None,
+    category_id: str | None = None,
+    category_name: str | None = None,
+    stats: list | None = None,
+    channel_ids: dict | None = None,
+    labels: dict | None = None,
+) -> None:
+    """Tallentaa palvelimen tilastokanavien asetukset."""
+    s = get_guild_settings(guild_id)
+    if enabled is not None:
+        s["server_stats_enabled"] = bool(enabled)
+    if category_id is not None:
+        s["server_stats_category_id"] = str(category_id) if category_id else None
+    if category_name is not None:
+        s["server_stats_category_name"] = str(category_name).strip()[:100] if category_name else "SERVER STATS"
+    if stats is not None:
+        valid = ("members", "humans", "online", "offline")
+        s["server_stats_stats"] = [x for x in stats if x in valid] or ["members", "humans", "online", "offline"]
+    if channel_ids is not None and isinstance(channel_ids, dict):
+        s["server_stats_channel_ids"] = {str(k): str(v) for k, v in channel_ids.items() if k and v}
+    if labels is not None and isinstance(labels, dict):
+        valid = ("members", "humans", "online", "offline")
+        s["server_stats_labels"] = {str(k): str(v).strip()[:50] for k, v in labels.items() if k in valid and v}
+    set_guild_settings(guild_id, s)
+
+
 def get_all_guild_settings_for_backup() -> dict:
     """Palauttaa kaikki palvelimien asetukset varmuuskopiota varten."""
     with _get_conn() as conn:
