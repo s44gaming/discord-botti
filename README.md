@@ -33,6 +33,7 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 - **Muistutus** – /reminder (max 7 pv, cooldown)
 - **Arvonta** – /giveaway arpoo voittajat (mod)
 - **Starboard** – ⭐-reaktiot kopioidaan starboard-kanavalle
+- **Palvelintilastot** – webistä hallittavat äänikanavat: Jäsenet, Ihmiset, Online, Offline – päivittyvät kun jäsenet liittyvät/lähtevät tai vaihtavat statusa
 - **Avatar, Userinfo, Reverse** – /avatar, /userinfo, /reverse
 - **Poll** – /poll luo äänestyksen
 - **Tervetuloa- ja poistumisviestit** – placeholders: {user}, {mention}, {server}, {member_count}
@@ -85,7 +86,7 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 ```
 run.py, bot.py, web_app.py, database.py, config.py, bot_info.py
 commands/ (ping, komennot_lista, info, hallinta, kutsu, moderaatio, taso, tiketti, minipelit, fivem, afk, ehdotus, muistutus, arvonta, poll, avatar, userinfo, reverse)
-events/ (on_ready, server_logs, levels, twitch_streams, afk, starboard, reminders)
+events/ (on_ready, server_logs, server_stats, levels, twitch_streams, afk, starboard, reminders)
 web/ (templates, static)
 data/ (bot.db, bot_info.txt)
 ```
@@ -129,6 +130,7 @@ You can use S44Gaming's hosted Xevrion bot on your own server without self-hosti
 - **Reminder** – /reminder (max 7 days, cooldown)
 - **Giveaway** – /giveaway picks winners from message reactors (mod)
 - **Starboard** – messages with ⭐ reactions copied to starboard channel
+- **Server stats** – web-configurable voice channels: Members, People, Online, Offline – update when members join/leave or change status
 - **Avatar, Userinfo, Reverse** – /avatar, /userinfo, /reverse
 - **Poll** – /poll creates a poll
 - **Welcome and goodbye messages** – placeholders: {user}, {mention}, {server}, {member_count}
@@ -181,7 +183,7 @@ You can use S44Gaming's hosted Xevrion bot on your own server without self-hosti
 ```
 run.py, bot.py, web_app.py, database.py, config.py, bot_info.py
 commands/ (ping, komennot_lista, info, hallinta, kutsu, moderaatio, taso, tiketti, minipelit, fivem, afk, ehdotus, muistutus, arvonta, poll, avatar, userinfo, reverse)
-events/ (on_ready, server_logs, afk, starboard, reminders)
+events/ (on_ready, server_logs, server_stats, afk, starboard, reminders)
 web/ (templates, static)
 data/ (bot.db, bot_info.txt)
 ```
