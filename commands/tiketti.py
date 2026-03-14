@@ -104,9 +104,11 @@ class TicketTopicSelect(discord.ui.Select):
             staff_role: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True),
             interaction.guild.me: discord.PermissionOverwrite(view_channel=True, send_messages=True, manage_channels=True),
         }
-        topic_role_id = topic.get("role_id")
-        if topic_role_id:
-            topic_role = interaction.guild.get_role(int(topic_role_id))
+        topic_role_ids = topic.get("role_ids") or ([topic.get("role_id")] if topic.get("role_id") else [])
+        for rid in topic_role_ids:
+            if not rid:
+                continue
+            topic_role = interaction.guild.get_role(int(rid))
             if topic_role:
                 overwrites[topic_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_message_history=True)
         try:

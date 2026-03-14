@@ -253,6 +253,15 @@ def get_user_warns(guild_id: str, user_id: str) -> list[dict]:
     return [{"id": r[0], "mod_id": r[1], "reason": r[2], "created_at": r[3]} for r in rows]
 
 
+def _topic_role_ids(t: dict) -> list:
+    """Palauttaa aiheen roolit listana. Tukee vanhaa role_id kenttää."""
+    role_ids = t.get("role_ids")
+    if isinstance(role_ids, list):
+        return [str(r).strip() for r in role_ids if r]
+    rid = t.get("role_id")
+    return [str(rid).strip()] if rid else []
+
+
 def get_ticket_settings(guild_id: str) -> dict:
     """Palauttaa tiketti-asetukset: staff_role_id, category_id, channel_id, transcript_channel_id, ticket_topics, panel_title, panel_description."""
     settings = get_guild_settings(guild_id)
@@ -264,7 +273,15 @@ def get_ticket_settings(guild_id: str) -> dict:
         "category_id": settings.get("ticket_category_id"),
         "channel_id": settings.get("ticket_channel_id"),
         "transcript_channel_id": settings.get("ticket_transcript_channel_id"),
-        "ticket_topics": [{"label": str(t.get("label", ""))[:100], "description": str(t.get("description", ""))[:100], "emoji": str(t.get("emoji", ""))[:10], "role_id": str(t.get("role_id", "")).strip() or None} for t in topics if isinstance(t, dict) and t.get("label")],
+        "ticket_topics": [
+            {
+                "label": str(t.get("label", ""))[:100],
+                "description": str(t.get("description", ""))[:100],
+                "emoji": str(t.get("emoji", ""))[:10],
+                "role_ids": _topic_role_ids(t),
+            }
+            for t in topics if isinstance(t, dict) and t.get("label")
+        ],
         "panel_title": (settings.get("ticket_panel_title") or "Tukitiketti").strip()[:256],
         "panel_description": (settings.get("ticket_panel_description") or "Valitse tiketin aihe alta.").strip()[:1000],
     }
@@ -274,10 +291,22 @@ def set_ticket_topics(guild_id: str, topics: list, panel_title: str | None = Non
     """Asettaa tikettiaiheet ja valinnaisesti paneelin otsikon ja kuvauksen."""
     s = get_guild_settings(guild_id)
     if topics is not None:
-        s["ticket_topics"] = [
-            {"label": str(t.get("label", ""))[:100], "description": str(t.get("description", ""))[:100], "emoji": str(t.get("emoji", ""))[:10], "role_id": str(t.get("role_id", "")).strip() or None}
-            for t in topics if isinstance(t, dict) and t.get("label")
-        ]
+        s["ticket_topics"] = []
+        for t in topics:
+            if not isinstance(t, dict) or not t.get("label"):
+                continue
+            role_ids = t.get("role_ids")
+            if isinstance(role_ids, list):
+                role_ids = [str(r).strip() for r in role_ids if r]
+            else:
+                rid = t.get("role_id")
+                role_ids = [str(rid).strip()] if rid else []
+            s["ticket_topics"].append({
+                "label": str(t.get("label", ""))[:100],
+                "description": str(t.get("description", ""))[:100],
+                "emoji": str(t.get("emoji", ""))[:10],
+                "role_ids": role_ids,
+            })
     if panel_title is not None:
         s["ticket_panel_title"] = str(panel_title).strip()[:256] if panel_title else "Tukitiketti"
     if panel_description is not None:

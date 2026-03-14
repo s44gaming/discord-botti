@@ -1,9 +1,9 @@
 [
   {
-    "date": "13.3.2025",
-    "title_key": "announce.server_stats.title",
-    "text_key": "announce.server_stats.text",
-    "title": "Uudet ominaisuudet -osio",
-    "text": "Palvelintilastot – webistä hallittavat äänikanavat: Jäsenet, Ihmiset, Online, Offline – päivittyvät kun jäsenet liittyvät/lähtevät tai vaihtavat statusa"
+    "date": "14.3.2025",
+    "title_key": "announce.ticket_roles.title",
+    "text_key": "announce.ticket_roles.text",
+    "title": "Uudet ominaisuudet",
+    "text": "Tikettiaiheen useat roolit – aiheeseen voi valita web-paneelista useita rooleja (Ctrl/Cmd + klikkaus). Vain valitut roolit näkevät kyseisen aiheen tiketit (staff näkee kaikki)."
   }
 ]

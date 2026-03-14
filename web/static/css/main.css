@@ -719,9 +719,10 @@ body {
   flex: 1;
   min-width: 140px;
 }
-.ticket-topic-row .ticket-topic-role {
+.ticket-topic-row .ticket-topic-role,
+.ticket-topic-row .ticket-topic-roles {
   min-width: 140px;
-  max-width: 180px;
+  max-width: 200px;
 }
 
 .twitch-streamers-list {

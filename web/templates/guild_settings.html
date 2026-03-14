@@ -334,17 +334,16 @@
                         <input type="text" id="ticket-panel-description" value="{{ ticket_panel_description }}" placeholder="Valitse tiketin aihe alta." class="channel-select" maxlength="500" data-i18n-placeholder="gs.select_topic">
                     </div>
                     <h3 class="panel-title" style="margin-top: 1rem;" data-i18n="gs.ticket_topics">Tiketin aiheet (pudotusvalikossa)</h3>
-                    <p class="muted" style="font-size: 0.85rem;" data-i18n="gs.ticket_topics_desc">Jos aiheita on vähintään yksi, käyttäjät valitsevat aiheen pudotusvalikosta. Rooli: vain tämä rooli näkee tämän aiheen tiketit (staff näkee kaikki).</p>
+                    <p class="muted" style="font-size: 0.85rem;" data-i18n="gs.ticket_topics_desc">Jos aiheita on vähintään yksi, käyttäjät valitsevat aiheen pudotusvalikosta. Roolit: vain nämä roolit näkevät tämän aiheen tiketit (staff näkee kaikki). Voit valita useita rooleja Ctrl/Cmd + klikkaus.</p>
                     <div id="ticket-topics-list" class="ticket-topics-list">
                         {% for t in ticket_topics %}
                         <div class="ticket-topic-row" data-index="{{ loop.index0 }}">
                             <input type="text" class="ticket-topic-label channel-select" placeholder="Otsikko" value="{{ t.label }}" maxlength="100" title="Aiheen otsikko">
                             <input type="text" class="ticket-topic-desc channel-select" placeholder="Kuvaus" value="{{ t.description }}" maxlength="100" title="Lyhyt kuvaus">
                             <input type="text" class="ticket-topic-emoji channel-select" placeholder="Emoji" value="{{ t.emoji }}" maxlength="10" style="width: 4rem;" title="Emoji (valinnainen)">
-                            <select class="ticket-topic-role channel-select" title="Rooli joka näkee vain tämän aiheen tiketit">
-                                <option value="">– Ei roolia –</option>
+                            <select class="ticket-topic-roles channel-select" multiple size="4" title="Roolit jotka näkevät vain tämän aiheen tiketit (Ctrl/Cmd + klikkaus)">
                                 {% for r in roles %}
-                                <option value="{{ r.id }}" {% if t.role_id == (r.id|string) %}selected{% endif %}>{{ r.name }}</option>
+                                <option value="{{ r.id }}" {% if (r.id|string) in (t.role_ids or []) %}selected{% endif %}>{{ r.name }}</option>
                                 {% endfor %}
                             </select>
                             <button type="button" class="btn btn-ghost ticket-topic-remove" title="Poista aihe">×</button>
@@ -724,28 +723,33 @@
 
         // Tiketti-aiheet ja paneelin teksti
         function getTicketTopics() {
-            return Array.from(document.querySelectorAll('#ticket-topics-list .ticket-topic-row')).map(row => ({
-                label: (row.querySelector('.ticket-topic-label')?.value || '').trim(),
-                description: (row.querySelector('.ticket-topic-desc')?.value || '').trim(),
-                emoji: (row.querySelector('.ticket-topic-emoji')?.value || '').trim(),
-                role_id: (row.querySelector('.ticket-topic-role')?.value || '').trim() || null
-            })).filter(t => t.label);
+            return Array.from(document.querySelectorAll('#ticket-topics-list .ticket-topic-row')).map(row => {
+                const sel = row.querySelector('.ticket-topic-roles');
+                const roleIds = sel ? Array.from(sel.selectedOptions || []).map(o => o.value).filter(Boolean) : [];
+                return {
+                    label: (row.querySelector('.ticket-topic-label')?.value || '').trim(),
+                    description: (row.querySelector('.ticket-topic-desc')?.value || '').trim(),
+                    emoji: (row.querySelector('.ticket-topic-emoji')?.value || '').trim(),
+                    role_ids: roleIds
+                };
+            }).filter(t => t.label);
         }
-        function getRoleOptions(selectedId) {
+        function getRoleOptionsMulti(selectedIds) {
             const opts = Array.from(document.querySelectorAll('#ticket-staff-role option')).filter(o => o.value);
-            return opts.map(o => `<option value="${o.value}" ${o.value === selectedId ? 'selected' : ''}>${escapeHtml(o.text)}</option>`).join('');
+            const selSet = new Set((selectedIds || []).map(String));
+            return opts.map(o => `<option value="${o.value}" ${selSet.has(String(o.value)) ? 'selected' : ''}>${escapeHtml(o.text)}</option>`).join('');
         }
-        function addTicketTopicRow(label, description, emoji, roleId) {
+        function addTicketTopicRow(label, description, emoji, roleIds) {
             const list = document.getElementById('ticket-topics-list');
             const row = document.createElement('div');
             row.className = 'ticket-topic-row';
-            const roleOpts = `<option value="">– Ei roolia –</option>${getRoleOptions(roleId || '')}`;
-            row.innerHTML = `<input type="text" class="ticket-topic-label channel-select" placeholder="Otsikko" value="${escapeHtml(label || '')}" maxlength="100" title="Aiheen otsikko"><input type="text" class="ticket-topic-desc channel-select" placeholder="Kuvaus" value="${escapeHtml(description || '')}" maxlength="100" title="Lyhyt kuvaus"><input type="text" class="ticket-topic-emoji channel-select" placeholder="Emoji" value="${escapeHtml(emoji || '')}" maxlength="10" style="width: 4rem;" title="Emoji (valinnainen)"><select class="ticket-topic-role channel-select" title="Rooli joka näkee vain tämän aiheen tiketit"><option value="">– Ei roolia –</option>${getRoleOptions(roleId || '')}</select><button type="button" class="btn btn-ghost ticket-topic-remove" title="Poista aihe">×</button>`;
+            const roleOpts = getRoleOptionsMulti(roleIds || []);
+            row.innerHTML = `<input type="text" class="ticket-topic-label channel-select" placeholder="Otsikko" value="${escapeHtml(label || '')}" maxlength="100" title="Aiheen otsikko"><input type="text" class="ticket-topic-desc channel-select" placeholder="Kuvaus" value="${escapeHtml(description || '')}" maxlength="100" title="Lyhyt kuvaus"><input type="text" class="ticket-topic-emoji channel-select" placeholder="Emoji" value="${escapeHtml(emoji || '')}" maxlength="10" style="width: 4rem;" title="Emoji (valinnainen)"><select class="ticket-topic-roles channel-select" multiple size="4" title="Roolit (Ctrl/Cmd + klikkaus)">${roleOpts}</select><button type="button" class="btn btn-ghost ticket-topic-remove" title="Poista aihe">×</button>`;
             list.appendChild(row);
             row.querySelector('.ticket-topic-remove').addEventListener('click', () => { row.remove(); });
         }
         document.getElementById('ticket-topic-add')?.addEventListener('click', function() {
-            addTicketTopicRow('', '', '', null);
+            addTicketTopicRow('', '', '', []);
         });
         document.getElementById('ticket-topics-save')?.addEventListener('click', function() {
             const topics = getTicketTopics();

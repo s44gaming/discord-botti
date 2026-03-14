@@ -41,6 +41,10 @@ Voit käyttää S44Gamingin ylläpitämää Xevrion-bottia omalla palvelimellasi
 - **FiveM** – /fivem näyttää palvelimen tilan
 - **Kehittäjäportaali** – DEV_USER_IDS: tilastot, virheloki, varmuuskopio, API-docs, käynnistä/sammuta
 
+## Uudet ominaisuudet
+
+- **Tikettiaiheen useat roolit** – Aiheeseen voi valita web-paneelista useita rooleja (Ctrl/Cmd + klikkaus). Vain valitut roolit näkevät kyseisen aiheen tiketit (staff näkee kaikki).
+
 ## Vaatimukset
 
 - **Python 3.8+** (suositellaan 3.10+)
@@ -137,6 +141,10 @@ You can use S44Gaming's hosted Xevrion bot on your own server without self-hosti
 - **Autorole** – new members automatically receive selected roles
 - **FiveM** – /fivem shows server status
 - **Developer portal** – for DEV_USER_IDS: stats, error log, backup, API docs, start/stop
+
+## What's new
+
+- **Multiple roles per ticket topic** – You can assign multiple roles to each topic in the web panel (Ctrl/Cmd + click). Only selected roles can see that topic's tickets (staff sees all).
 
 ## Requirements
 

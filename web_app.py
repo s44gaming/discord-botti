@@ -1231,10 +1231,20 @@ def api_set_ticket_topics(guild_id):
     if not any(g["id"] == guild_id for g in guilds):
         return jsonify({"error": "Ei oikeuksia"}), 403
     data = request.get_json() or {}
-    topics = data.get("topics", [])
-    if not isinstance(topics, list):
-        topics = []
-    topics = [{"label": str(t.get("label", ""))[:100], "description": str(t.get("description", ""))[:100], "emoji": str(t.get("emoji", ""))[:10], "role_id": str(t.get("role_id", "")).strip() or None} for t in topics if isinstance(t, dict) and t.get("label")]
+    topics_raw = data.get("topics", [])
+    if not isinstance(topics_raw, list):
+        topics_raw = []
+    topics = []
+    for t in topics_raw:
+        if not isinstance(t, dict) or not t.get("label"):
+            continue
+        role_ids = t.get("role_ids")
+        if isinstance(role_ids, list):
+            role_ids = [str(r).strip() for r in role_ids if r]
+        else:
+            rid = t.get("role_id")
+            role_ids = [str(rid).strip()] if rid else []
+        topics.append({"label": str(t.get("label", ""))[:100], "description": str(t.get("description", ""))[:100], "emoji": str(t.get("emoji", ""))[:10], "role_ids": role_ids})
     panel_title = data.get("panel_title")
     panel_description = data.get("panel_description")
     database.set_ticket_topics(guild_id, topics=topics, panel_title=panel_title, panel_description=panel_description)
