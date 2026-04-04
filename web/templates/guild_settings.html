@@ -547,48 +547,6 @@
                 <button type="button" class="btn btn-primary" id="starboard-save">Tallenna</button>
             </div>
 
-            <!-- Reaction roles -->
-            <div class="settings-card">
-                <h2 data-i18n="gs.reaction_roles">Reaction roles</h2>
-                <p class="card-desc" data-i18n="gs.reaction_roles_desc">Käyttäjät reagoivat emojilla viestiin ja saavat roolin. Oikealla hiiren napilla viestiin → Kopioi viestin tunnus.</p>
-                <div class="ticket-row toggle-row">
-                    <label class="toggle">
-                        <input type="checkbox" id="reaction-roles-enabled" {% if reaction_roles_enabled %}checked{% endif %}>
-                        <span class="toggle-track"></span>
-                    </label>
-                    <label for="reaction-roles-enabled" data-i18n="common.on">Päällä</label>
-                </div>
-                <h3 class="panel-title" style="margin-top: 1rem;">Emoji → Rooli -parit</h3>
-                <div id="reaction-roles-list" class="ticket-topics-list">
-                    {% for r in reaction_roles %}
-                    <div class="reaction-role-row ticket-topic-row">
-                        <input type="text" class="rr-msg-id channel-select" placeholder="Viestin ID" value="{{ r.message_id }}" title="Viestin ID (Discord: oikea klikkaus → Kopioi viestin tunnus)">
-                        <select class="rr-channel channel-select">
-                            <option value="">Kanava</option>
-                            {% for ch in channels %}
-                            <option value="{{ ch.id }}" {% if (r.channel_id|string) == (ch.id|string) %}selected{% endif %}>{{ ch.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <input type="text" class="rr-emoji channel-select" placeholder="Emoji" value="{{ r.emoji }}" maxlength="20" style="width: 5rem;">
-                        <select class="rr-role channel-select">
-                            <option value="">Rooli</option>
-                            {% for ro in roles %}
-                            <option value="{{ ro.id }}" {% if (r.role_id|string) == (ro.id|string) %}selected{% endif %}>{{ ro.name }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="button" class="btn btn-ghost rr-remove">×</button>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="ticket-row" style="margin-top: 0.5rem;">
-                    <button type="button" id="reaction-role-add" class="btn btn-ghost">+ Lisää rivi</button>
-                </div>
-                <div class="ticket-row" style="margin-top: 0.5rem;">
-                    <button type="button" id="reaction-roles-save" class="btn btn-primary">Tallenna reaction roles</button>
-                </div>
-            </div>
-            </div>
-            </section>
 
             <section id="serverstats" class="settings-section">
                 <h2 class="section-heading" data-i18n="gs.server_stats">Palvelintilastot</h2>
@@ -1063,52 +1021,7 @@
         document.getElementById('ticket-category')?.addEventListener('change', saveTicketSettings);
         document.getElementById('ticket-channel')?.addEventListener('change', saveTicketSettings);
 
-        // Reaction roles
-        function getReactionRoles() {
-            return Array.from(document.querySelectorAll('.reaction-role-row')).map(row => ({
-                message_id: (row.querySelector('.rr-msg-id')?.value || '').trim(),
-                channel_id: (row.querySelector('.rr-channel')?.value || '').trim(),
-                emoji: (row.querySelector('.rr-emoji')?.value || '').trim(),
-                role_id: (row.querySelector('.rr-role')?.value || '').trim()
-            })).filter(r => r.message_id && r.role_id);
-        }
-        function saveReactionRoles() {
-            const enabled = document.getElementById('reaction-roles-enabled')?.checked ?? false;
-            const roles = getReactionRoles();
-            fetch(`/api/guild/${guildId}/reaction-roles/settings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled, roles })
-            }).then(r => { if (!r.ok) alert('Reaction roles -tallennus epäonnistui'); });
-        }
-        document.getElementById('reaction-role-add')?.addEventListener('click', function() {
-            const chRef = document.getElementById('log-channel');
-            const roleRef = document.getElementById('ticket-staff-role');
-            const chOpts = chRef ? Array.from(chRef.options).map(o => ({ v: o.value, t: o.text })) : [];
-            const roleOpts = roleRef ? Array.from(roleRef.options).filter(o => o.value).map(o => ({ v: o.value, t: o.text })) : [];
-            const list = document.getElementById('reaction-roles-list');
-            const row = document.createElement('div');
-            row.className = 'reaction-role-row ticket-topic-row';
-            const chSelect = chOpts.map(o => `<option value="${o.v}">${escapeHtml(o.t)}</option>`).join('');
-            const roleSelect = roleOpts.map(o => `<option value="${o.v}">${escapeHtml(o.t)}</option>`).join('');
-            row.innerHTML = `<input type="text" class="rr-msg-id channel-select" placeholder="Viestin ID" title="Viestin ID"><select class="rr-channel channel-select">${chSelect}</select><input type="text" class="rr-emoji channel-select" placeholder="Emoji" maxlength="20" style="width: 5rem;"><select class="rr-role channel-select">${roleSelect}</select><button type="button" class="btn btn-ghost rr-remove">×</button>`;
-            list.appendChild(row);
-            row.querySelector('.rr-remove').addEventListener('click', () => { row.remove(); saveReactionRoles(); });
-        });
-        document.getElementById('reaction-roles-save')?.addEventListener('click', function() {
-            const enabled = document.getElementById('reaction-roles-enabled')?.checked ?? false;
-            const roles = getReactionRoles();
-            fetch(`/api/guild/${guildId}/reaction-roles/settings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ enabled, roles })
-            }).then(r => {
-                if (r.ok) alert('Reaction roles tallennettu.');
-                else alert('Tallennus epäonnistui.');
-            });
-        });
-        document.getElementById('reaction-roles-enabled')?.addEventListener('change', saveReactionRoles);
-
+      
         // Mod-roolit
         const roleGrid = document.getElementById('role-grid');
         if (roleGrid) {
